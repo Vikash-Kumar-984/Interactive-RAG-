@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive RAG Mastery — Vikash Innovative Tech</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Oxanium:wght@300;400;600;700;800&family=Fira+Code:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020609;--bg1:#060f1a;--bg2:#0a1828;--bg3:#0f2035;
+  --surface:#122038;--surface2:#192d4a;--surface3:#1e3558;
+  --border:rgba(0,210,255,.1);--border2:rgba(0,210,255,.25);--border3:rgba(0,210,255,.45);
+  --cyan:#00d2ff;--cyan2:#00a8cc;--cyan3:#007a99;
+  --green:#00ff9d;--green2:#00cc7a;
+  --amber:#fbbf24;--amber2:#d97706;
+  --rose:#fb7185;--rose2:#e11d48;
+  --violet:#a78bfa;--violet2:#7c3aed;
+  --orange:#f97316;--teal:#2dd4bf;--lime:#a3e635;
+  --text:#dff4ff;--text2:#7db8d8;--text3:#3a6080;--text4:#1e3a52;
+  --mono:'Fira Code',monospace;--head:'Oxanium',sans-serif;--disp:'Clash Display',sans-serif;
+  --p0:#00d2ff;--p1:#00ff9d;--p2:#fbbf24;--p3:#fb7185;--p4:#a78bfa;
+  --p5:#f97316;--p6:#2dd4bf;--p7:#a3e635;--p8:#e879f9;--p9:#60a5fa;
+  --p10:#4ade80;--p11:#facc15;--p12:#f87171;--p13:#818cf8;--p14:#c084fc;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--head);overflow-x:hidden;cursor:none;}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--cyan2);border-radius:2px;}
+
+/* ── CURSOR ─────────────────────────────────── */
+#c1{position:fixed;width:10px;height:10px;background:var(--cyan);border-radius:50%;pointer-events:none;z-index:9999;mix-blend-mode:screen;transform:translate(-50%,-50%);}
+#c2{position:fixed;width:32px;height:32px;border:1.5px solid rgba(0,210,255,.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all .12s;}
+
+/* ── PROGRESS ────────────────────────────────── */
+#prog{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--rose));z-index:300;width:0;box-shadow:0 0 8px var(--cyan);}
+
+/* ── NAV ─────────────────────────────────────── */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:1rem 3rem;background:rgba(2,6,9,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+.nav-brand{font-family:var(--disp);font-size:1.1rem;font-weight:700;color:var(--cyan);letter-spacing:.04em;}
+.nav-brand span{color:var(--green);}
+.nav-links{display:flex;gap:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.nav-link{padding:.45rem 1rem;font-size:.7rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);text-decoration:none;transition:all .2s;border:none;background:none;cursor:pointer;font-family:var(--head);}
+.nav-link:hover,.nav-link.active{background:var(--bg2);color:var(--cyan);}
+.nav-copy{font-size:.65rem;color:var(--text3);font-family:var(--mono);}
+
+/* ── TOOLTIP ─────────────────────────────────── */
+#tooltip{position:fixed;background:rgba(6,15,26,.96);border:1px solid var(--border2);border-radius:8px;padding:.6rem .9rem;font-family:var(--mono);font-size:.7rem;color:var(--text);pointer-events:none;z-index:5000;max-width:260px;line-height:1.6;display:none;box-shadow:0 8px 30px rgba(0,0,0,.5);}
+
+/* ── CANVAS BG ───────────────────────────────── */
+#bgc{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.35;}
+
+/* ── SECTIONS ────────────────────────────────── */
+section{position:relative;z-index:1;}
+
+/* ── HERO ────────────────────────────────────── */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:7rem 2rem 4rem;text-align:center;overflow:hidden;}
+.hero-pill{display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,210,255,.07);border:1px solid var(--border2);border-radius:100px;padding:.45rem 1.2rem;font-family:var(--mono);font-size:.7rem;color:var(--cyan);letter-spacing:.09em;margin-bottom:2.5rem;animation:fsu .7s ease both;}
+.hero-pill::before{content:'';width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 1.5s infinite;}
+.hero h1{font-family:var(--disp);font-size:clamp(2.8rem,7vw,6.2rem);font-weight:700;line-height:1.05;margin-bottom:1.5rem;animation:fsu .8s .1s ease both;}
+.grad-text{background:linear-gradient(90deg,var(--cyan),var(--violet),var(--rose),var(--cyan));background-size:300% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gs 4s linear infinite,fsu .8s .1s ease both;}
+@keyframes gs{to{background-position:300% center;}}
+.hero-sub{font-family:var(--mono);font-size:1rem;color:var(--text2);max-width:600px;line-height:1.8;margin-bottom:2.5rem;font-weight:300;animation:fsu .8s .25s ease both;}
+.hero-ctas{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center;animation:fsu .8s .4s ease both;}
+.btn{display:inline-block;padding:.8rem 2rem;border-radius:8px;font-family:var(--mono);font-size:.82rem;font-weight:500;letter-spacing:.05em;cursor:pointer;text-decoration:none;transition:all .3s;border:none;}
+.btn-prim{background:linear-gradient(135deg,var(--cyan),var(--cyan2));color:#000;font-weight:700;}
+.btn-prim:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,210,255,.35);}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);}
+.btn-ghost:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,210,255,.05);}
+
+/* PIPELINE MINI */
+.pipeline-mini{display:flex;align-items:center;flex-wrap:nowrap;gap:0;margin-top:4rem;animation:fsu .9s .7s ease both;overflow-x:auto;padding:.5rem 0;}
+.pm-step{display:flex;flex-direction:column;align-items:center;gap:.4rem;min-width:80px;}
+.pm-icon{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;background:var(--surface);border:1px solid var(--border2);transition:all .3s;cursor:pointer;}
+.pm-icon:hover{transform:translateY(-4px) scale(1.1);border-color:var(--cyan);box-shadow:0 0 24px rgba(0,210,255,.3);}
+.pm-lbl{font-size:.58rem;color:var(--text3);letter-spacing:.09em;text-transform:uppercase;font-family:var(--mono);}
+.pm-arr{width:36px;height:2px;background:linear-gradient(90deg,var(--border2),var(--cyan));flex-shrink:0;margin-bottom:1.4rem;position:relative;}
+.pm-arr::after{content:'▶';font-size:.45rem;color:var(--cyan);position:absolute;right:-6px;top:-5px;}
+
+@keyframes fsu{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* ── COMMON SECTION ──────────────────────────── */
+.sec{padding:7rem 2rem;}
+.sec-inner{max-width:1300px;margin:0 auto;}
+.sec-tag{font-family:var(--mono);font-size:.68rem;color:var(--cyan);letter-spacing:.18em;text-transform:uppercase;display:flex;align-items:center;gap:.7rem;margin-bottom:.9rem;}
+.sec-tag::before{content:'';width:28px;height:1px;background:var(--cyan);}
+.sec-h{font-family:var(--disp);font-size:clamp(1.8rem,3.5vw,3rem);font-weight:700;line-height:1.1;margin-bottom:1rem;}
+.sec-sub{font-family:var(--mono);font-size:.9rem;color:var(--text2);line-height:1.8;font-weight:300;}
+.divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent);margin:0;}
+
+/* ── REVEAL ──────────────────────────────────── */
+.rv{opacity:0;transform:translateY(36px);transition:opacity .7s ease,transform .7s ease;}
+.rv.visible{opacity:1;transform:translateY(0);}
+.rv1{transition-delay:.1s;}.rv2{transition-delay:.2s;}.rv3{transition-delay:.3s;}.rv4{transition-delay:.4s;}
+
+/* ── CARD BASE ───────────────────────────────── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:all .4s;}
+.card:hover{border-color:var(--border2);transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.3rem;background:var(--surface2);border-bottom:1px solid var(--border);}
+.card-title{display:flex;align-items:center;gap:.5rem;font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);}
+.dot{width:6px;height:6px;border-radius:50%;}
+.card-body{padding:1.3rem;}
+
+/* ── WHY RAG ─────────────────────────────────── */
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;margin-top:2.5rem;}
+.why-card{padding:1.8rem;border-radius:14px;background:var(--surface);border:1px solid var(--border);transition:all .4s;position:relative;overflow:hidden;}
+.why-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at top left,rgba(0,210,255,.04),transparent 70%);opacity:0;transition:opacity .4s;}
+.why-card:hover{transform:translateY(-5px);border-color:var(--border2);box-shadow:0 20px 50px rgba(0,0,0,.5);}
+.why-card:hover::before{opacity:1;}
+.why-card.prob{border-top:2px solid var(--rose);}
+.why-card.sol{border-top:2px solid var(--green);}
+.why-card h3{font-size:1rem;font-weight:700;margin:1rem 0 .6rem;}
+.why-card p{font-family:var(--mono);font-size:.82rem;color:var(--text2);line-height:1.75;font-weight:300;}
+.wi{font-size:1.8rem;margin-bottom:.3rem;}
+.metrics{display:flex;gap:2rem;flex-wrap:wrap;margin-top:2rem;}
+.met{display:flex;flex-direction:column;gap:.25rem;}
+.met-v{font-family:var(--disp);font-size:2.2rem;font-weight:700;background:linear-gradient(90deg,var(--cyan),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.met-l{font-family:var(--mono);font-size:.62rem;color:var(--text3);letter-spacing:.12em;}
+
+/* ── STEP TABS ───────────────────────────────── */
+.step-nav{display:flex;flex-wrap:wrap;gap:.3rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.35rem;max-width:1000px;margin:2rem auto 0;}
+.stab{padding:.5rem 1rem;border-radius:7px;font-size:.7rem;font-weight:700;letter-spacing:.07em;cursor:pointer;border:none;background:transparent;color:var(--text3);transition:all .25s;font-family:var(--head);white-space:nowrap;}
+.stab.on,.stab:hover{background:var(--bg2);color:var(--cyan);border:1px solid var(--border2);}
+
+/* ── STEP CARD ───────────────────────────────── */
+.step-pane{display:none;}
+.step-pane.on{display:grid;grid-template-columns:1fr 1fr;gap:3.5rem;align-items:start;animation:fsu .45s ease both;}
+.step-num{font-family:var(--mono);font-size:.68rem;color:var(--cyan);letter-spacing:.18em;text-transform:uppercase;margin-bottom:.8rem;}
+.step-h{font-family:var(--disp);font-size:2.2rem;font-weight:700;line-height:1.1;margin-bottom:1rem;}
+.step-p{font-family:var(--mono);font-size:.85rem;color:var(--text2);line-height:1.8;font-weight:300;margin-bottom:1.5rem;}
+.ibox{display:flex;gap:.75rem;align-items:flex-start;padding:1rem 1.2rem;border-radius:9px;margin-bottom:.9rem;}
+.ibox.tip{background:rgba(0,255,157,.06);border:1px solid rgba(0,255,157,.2);}
+.ibox.tip p{color:rgba(0,255,157,.85);}
+.ibox.warn{background:rgba(251,113,133,.06);border:1px solid rgba(251,113,133,.2);}
+.ibox.warn p{color:rgba(251,113,133,.85);}
+.ibox.info{background:rgba(0,210,255,.06);border:1px solid rgba(0,210,255,.2);}
+.ibox.info p{color:rgba(0,210,255,.85);}
+.ibox-ico{font-size:1rem;flex-shrink:0;margin-top:.15rem;}
+.ibox p{font-family:var(--mono);font-size:.8rem;line-height:1.65;}
+.ibox strong{font-weight:600;}
+
+/* ── CODE PANEL ──────────────────────────────── */
+.code-panel{background:#030c18;border:1px solid var(--border);border-radius:14px;overflow:hidden;position:sticky;top:90px;}
+.code-hd{display:flex;align-items:center;justify-content:space-between;padding:.8rem 1.1rem;background:var(--surface2);border-bottom:1px solid var(--border);}
+.dots span{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;}
+.dots span:nth-child(1){background:#ff5f57;}.dots span:nth-child(2){background:#ffbd2e;}.dots span:nth-child(3){background:#28c840;}
+.fname{font-family:var(--mono);font-size:.68rem;color:var(--text3);}
+.cpbtn{background:rgba(0,210,255,.1);border:1px solid var(--border2);color:var(--cyan);font-size:.62rem;padding:.25rem .6rem;border-radius:4px;cursor:pointer;font-family:var(--mono);transition:all .2s;}
+.cpbtn:hover{background:rgba(0,210,255,.2);}
+.code-bd{padding:1.3rem;overflow-x:auto;max-height:520px;overflow-y:auto;}
+pre{font-family:var(--mono);font-size:.77rem;line-height:1.85;color:#c9d9f0;}
+.kw{color:#c792ea;}.fn{color:#82aaff;}.str{color:#c3e88d;}.cm{color:#4a6a80;font-style:italic;}
+.num{color:#f78c6c;}.var{color:#eeffff;}.cls{color:#ffcb6b;}.op{color:#89ddff;}.ret{color:#f07178;}
+
+/* ── DEMO BOX ────────────────────────────────── */
+.demo-box{margin-top:1.5rem;background:#030c18;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.demo-hd{padding:.7rem 1.1rem;background:var(--surface2);border-bottom:1px solid var(--border);font-family:var(--mono);font-size:.68rem;color:var(--text3);letter-spacing:.1em;}
+.demo-bd{padding:1.1rem;}
+
+/* ── CHUNKING LAB ────────────────────────────── */
+.lab-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.3rem;margin-top:1.5rem;}
+.meth-bar{display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:1rem;}
+.meth-btn{padding:.45rem 1.1rem;border-radius:7px;font-size:.72rem;font-weight:700;letter-spacing:.06em;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text3);transition:all .25s;font-family:var(--head);}
+.meth-btn.on{border-color:var(--cyan);color:var(--cyan);background:rgba(0,210,255,.08);box-shadow:0 0 14px rgba(0,210,255,.1);}
+.ctrl-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1rem;}
+.ctrl{display:flex;flex-direction:column;gap:.4rem;}
+.ctrl-lbl{font-family:var(--mono);font-size:.66rem;color:var(--text3);display:flex;justify-content:space-between;}
+.ctrl-lbl span{color:var(--cyan);font-weight:600;}
+input[type=range]{width:100%;-webkit-appearance:none;height:3px;border-radius:2px;background:var(--surface3);outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--cyan);cursor:pointer;box-shadow:0 0 8px rgba(0,210,255,.5);transition:transform .15s;}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3);}
+.tviz{font-family:var(--mono);font-size:.73rem;line-height:1.9;background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:1rem;max-height:260px;overflow-y:auto;word-break:break-word;}
+.tviz .ck{border-radius:2px;padding:.03em .1em;transition:all .25s;cursor:pointer;}
+.tviz .ck:hover{filter:brightness(1.6);outline:1.5px solid rgba(255,255,255,.35);}
+.stats-bar{display:flex;gap:.8rem;flex-wrap:wrap;margin-top:.8rem;}
+.sbox{flex:1;min-width:70px;background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:.7rem .8rem;text-align:center;}
+.snum{font-family:var(--disp);font-size:1.5rem;font-weight:700;background:linear-gradient(135deg,var(--cyan),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.slbl{font-family:var(--mono);font-size:.58rem;color:var(--text3);letter-spacing:.1em;margin-top:.2rem;}
+.chunk-list{display:flex;flex-direction:column;gap:.4rem;max-height:320px;overflow-y:auto;padding-right:.2rem;}
+.citem{display:flex;gap:.6rem;align-items:flex-start;padding:.65rem .85rem;border-radius:7px;background:var(--bg1);border:1px solid var(--border);cursor:pointer;transition:all .22s;}
+.citem:hover{border-color:var(--border2);transform:translateX(3px);}
+.citem.hl{border-color:var(--cyan);background:rgba(0,210,255,.05);box-shadow:0 0 10px rgba(0,210,255,.1);}
+.cidx{flex-shrink:0;width:26px;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;font-family:var(--mono);}
+.ctxt{font-family:var(--mono);font-size:.7rem;line-height:1.6;color:var(--text2);}
+.cmeta{font-size:.58rem;color:var(--text3);font-family:var(--mono);margin-top:.2rem;}
+.dist-chart{height:70px;display:flex;align-items:flex-end;gap:1.5px;overflow:hidden;margin-top:.7rem;}
+.dbar{border-radius:2px 2px 0 0;transition:height .45s cubic-bezier(.34,1.56,.64,1),background .3s;cursor:pointer;min-width:3px;}
+.dbar:hover{filter:brightness(1.4);}
+.method-exp{font-family:var(--mono);font-size:.75rem;color:var(--text2);line-height:1.7;padding:.8rem 1rem;background:rgba(0,210,255,.04);border:1px solid var(--border);border-radius:8px;margin-bottom:1rem;}
+.method-exp strong{color:var(--cyan);}
+
+/* ── SWEEP BAR ───────────────────────────────── */
+.sweep-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.3rem;margin-top:1rem;}
+.sweep-chart{height:60px;display:flex;align-items:flex-end;gap:1px;overflow:hidden;}
+.swbar{flex:1;border-radius:1px 1px 0 0;transition:height .3s,background .3s;cursor:pointer;min-width:2px;}
+.playbar{display:flex;align-items:center;gap:.8rem;margin-top:.7rem;}
+.pbtn{width:28px;height:28px;border-radius:50%;background:var(--cyan);border:none;cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;}
+.pbtn:hover{transform:scale(1.15);box-shadow:0 0 14px rgba(0,210,255,.5);}
+.ptrack{flex:1;height:3px;background:var(--surface3);border-radius:2px;cursor:pointer;position:relative;}
+.pfill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--cyan),var(--violet));transition:width .08s;}
+.plbl{font-family:var(--mono);font-size:.62rem;color:var(--text3);width:55px;text-align:right;}
+
+/* ── EMBEDDING CANVAS ────────────────────────── */
+.emb-section{display:grid;grid-template-columns:1fr 340px;gap:1.3rem;margin-top:1.5rem;}
+.canvas-wrap{background:var(--bg1);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;}
+#embCanvas{display:block;width:100%;cursor:crosshair;}
+.canvas-ov{position:absolute;top:.65rem;left:.65rem;right:.65rem;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;}
+.cov-badge{background:rgba(2,6,9,.78);border:1px solid var(--border2);border-radius:7px;padding:.35rem .75rem;font-family:var(--mono);font-size:.65rem;color:var(--cyan);backdrop-filter:blur(8px);}
+.vbtns{display:flex;gap:.3rem;pointer-events:all;}
+.vbtn{background:rgba(2,6,9,.8);border:1px solid var(--border);border-radius:5px;padding:.3rem .65rem;font-size:.62rem;font-family:var(--head);font-weight:700;color:var(--text3);cursor:pointer;transition:all .2s;backdrop-filter:blur(8px);}
+.vbtn.on{border-color:var(--cyan);color:var(--cyan);}
+.emb-sidebar{display:flex;flex-direction:column;gap:1rem;}
+.legend{display:flex;flex-direction:column;gap:.3rem;max-height:160px;overflow-y:auto;}
+.leg-item{display:flex;align-items:center;gap:.5rem;font-family:var(--mono);font-size:.67rem;color:var(--text2);padding:.2rem .35rem;border-radius:4px;cursor:pointer;transition:background .2s;}
+.leg-item:hover{background:rgba(0,210,255,.06);}
+.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.sim-matrix{display:grid;gap:1px;}
+.sim-cell{aspect-ratio:1;border-radius:1px;cursor:pointer;transition:all .3s;}
+.sim-cell:hover{transform:scale(1.5);z-index:10;box-shadow:0 0 8px rgba(255,255,255,.3);}
+.cluster-list{display:flex;flex-direction:column;gap:.4rem;}
+.cl-chip{display:flex;align-items:center;gap:.5rem;padding:.45rem .7rem;border-radius:7px;background:var(--bg1);border:1px solid var(--border);font-size:.7rem;cursor:pointer;transition:border-color .2s;}
+.cl-chip:hover{border-color:var(--border2);}
+.cl-sw{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+
+/* ── COMPARE ─────────────────────────────────── */
+.cmp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin-top:1.3rem;}
+.cmp-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem;transition:all .3s;}
+.cmp-card:hover{border-color:var(--border2);}
+
+/* ── RETRIEVAL DEMO ──────────────────────────── */
+.qrow{display:flex;gap:.5rem;margin-bottom:.8rem;}
+.qinp{flex:1;background:var(--surface3);border:1px solid var(--border2);border-radius:7px;padding:.55rem .9rem;font-family:var(--mono);font-size:.78rem;color:var(--text);outline:none;transition:border-color .2s;}
+.qinp:focus{border-color:var(--cyan);box-shadow:0 0 10px rgba(0,210,255,.1);}
+.qbtn{background:linear-gradient(135deg,var(--cyan),var(--cyan2));color:#000;border:none;padding:.55rem 1.1rem;border-radius:7px;font-family:var(--head);font-size:.72rem;font-weight:700;cursor:pointer;transition:all .3s;}
+.qbtn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,210,255,.3);}
+.result{display:flex;gap:.65rem;align-items:flex-start;padding:.7rem .9rem;border-radius:7px;background:var(--surface);border:1px solid var(--border);margin-bottom:.4rem;opacity:0;transform:translateX(-8px);transition:all .35s;}
+.result.show{opacity:1;transform:translateX(0);}
+.r-rank{background:var(--cyan);color:#000;font-size:.58rem;font-weight:800;font-family:var(--mono);padding:.15rem .4rem;border-radius:3px;flex-shrink:0;margin-top:.1rem;}
+.r-txt{font-family:var(--mono);font-size:.73rem;color:var(--text2);line-height:1.6;}
+.r-score{font-size:.62rem;color:var(--green);font-family:var(--mono);margin-top:.25rem;}
+
+/* ── CHAT ────────────────────────────────────── */
+.chat-win{background:var(--surface);border-radius:10px;overflow:hidden;}
+.chat-hd{padding:.7rem .95rem;background:var(--surface2);display:flex;align-items:center;gap:.45rem;font-family:var(--mono);font-size:.68rem;color:var(--cyan);border-bottom:1px solid var(--border);}
+.chat-body{padding:.9rem;max-height:260px;overflow-y:auto;}
+.cmsg{margin-bottom:.9rem;opacity:0;transform:translateY(6px);transition:all .35s;}
+.cmsg.show{opacity:1;transform:translateY(0);}
+.cmsg.user{text-align:right;}
+.cbubble{display:inline-block;padding:.6rem .9rem;border-radius:9px;font-family:var(--mono);font-size:.75rem;line-height:1.6;max-width:88%;text-align:left;}
+.user .cbubble{background:rgba(0,210,255,.12);border:1px solid rgba(0,210,255,.2);color:var(--text);}
+.bot .cbubble{background:rgba(0,255,157,.05);border:1px solid rgba(0,255,157,.15);color:var(--text2);}
+.crole{font-size:.58rem;color:var(--text3);font-family:var(--mono);margin-bottom:.25rem;}
+.user .crole{text-align:right;}
+.csrc{display:inline-block;background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.25);color:var(--violet);font-size:.58rem;padding:.1rem .4rem;border-radius:3px;font-family:var(--mono);margin-top:.25rem;}
+.tcursor{display:inline-block;width:2px;height:12px;background:var(--cyan);animation:blink 1s step-end infinite;vertical-align:middle;margin-left:1px;}
+
+/* ── PLAYGROUND ──────────────────────────────── */
+.playground-bg{background:linear-gradient(180deg,var(--bg) 0%,var(--bg1) 50%,var(--bg) 100%);}
+.pg-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.3rem;margin-top:2rem;}
+.sq-btn{background:var(--bg1);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:var(--mono);font-size:.75rem;padding:.45rem .8rem;cursor:pointer;text-align:left;transition:all .2s;display:block;width:100%;margin-bottom:.4rem;}
+.sq-btn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,210,255,.04);}
+.pg-input{width:100%;background:var(--bg1);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:.78rem;line-height:1.7;padding:.9rem;resize:vertical;min-height:110px;outline:none;transition:border-color .2s;}
+.pg-input:focus{border-color:var(--cyan);}
+.pg-run{width:100%;margin-top:.8rem;background:linear-gradient(135deg,var(--cyan),var(--violet));color:#fff;border:none;padding:.75rem;border-radius:8px;font-family:var(--head);font-size:.78rem;font-weight:700;cursor:pointer;transition:all .3s;letter-spacing:.04em;}
+.pg-run:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,210,255,.3);}
+.pg-run:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.output{min-height:100px;background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:.9rem;font-family:var(--mono);font-size:.77rem;color:var(--text2);line-height:1.75;overflow-y:auto;max-height:180px;}
+
+/* ── CONCEPTS ────────────────────────────────── */
+.concepts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.3rem;margin-top:2rem;}
+.concept-card{padding:1.8rem;border-radius:14px;background:var(--surface);border:1px solid var(--border);position:relative;overflow:hidden;cursor:default;transition:all .4s;}
+.concept-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;}
+.concept-card:hover{transform:translateY(-5px);border-color:var(--border2);box-shadow:0 20px 50px rgba(0,0,0,.5);}
+.con1::after{background:linear-gradient(90deg,var(--cyan),transparent);}
+.con2::after{background:linear-gradient(90deg,var(--violet),transparent);}
+.con3::after{background:linear-gradient(90deg,var(--green),transparent);}
+.con4::after{background:linear-gradient(90deg,var(--orange),transparent);}
+.con5::after{background:linear-gradient(90deg,var(--rose),transparent);}
+.con6::after{background:linear-gradient(90deg,var(--amber),transparent);}
+.con7::after{background:linear-gradient(90deg,var(--teal),transparent);}
+.con8::after{background:linear-gradient(90deg,var(--lime),transparent);}
+.concept-card .ico{font-size:1.9rem;margin-bottom:.9rem;display:block;}
+.concept-card h3{font-size:1rem;font-weight:700;margin-bottom:.7rem;}
+.concept-card p{font-family:var(--mono);font-size:.79rem;color:var(--text2);line-height:1.7;font-weight:300;}
+.ctag{display:inline-block;margin-top:.9rem;font-size:.6rem;font-family:var(--mono);letter-spacing:.1em;padding:.15rem .55rem;border-radius:4px;border:1px solid;}
+.con1 .ctag{color:var(--cyan);border-color:rgba(0,210,255,.3);}
+.con2 .ctag{color:var(--violet);border-color:rgba(167,139,250,.3);}
+.con3 .ctag{color:var(--green);border-color:rgba(0,255,157,.3);}
+.con4 .ctag{color:var(--orange);border-color:rgba(249,115,22,.3);}
+.con5 .ctag{color:var(--rose);border-color:rgba(251,113,133,.3);}
+.con6 .ctag{color:var(--amber);border-color:rgba(251,191,36,.3);}
+.con7 .ctag{color:var(--teal);border-color:rgba(45,212,191,.3);}
+.con8 .ctag{color:var(--lime);border-color:rgba(163,230,53,.3);}
+
+/* ── BEFORE/AFTER ────────────────────────────── */
+.ba-grid{display:grid;grid-template-columns:1fr 1fr;border-radius:10px;overflow:hidden;border:1px solid var(--border);margin-top:1rem;}
+.ba-col{padding:1rem;}
+.ba-col:first-child{border-right:1px solid var(--border);}
+.ba-lbl{font-size:.6rem;font-family:var(--mono);letter-spacing:.12em;margin-bottom:.6rem;font-weight:600;}
+.ba-txt{font-family:var(--mono);font-size:.72rem;color:var(--text2);line-height:1.65;}
+
+/* ── FULL PIPELINE VISUAL ────────────────────── */
+.pipeline-full{display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;overflow-x:auto;padding:1.5rem 0;gap:0;}
+.pnode{display:flex;flex-direction:column;align-items:center;gap:.7rem;min-width:110px;cursor:pointer;}
+.pnode-box{width:74px;height:74px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;background:var(--surface);border:1px solid var(--border);transition:all .4s;}
+.pnode:hover .pnode-box{transform:scale(1.15) translateY(-5px);border-color:var(--cyan);box-shadow:0 20px 50px rgba(0,0,0,.5),0 0 30px rgba(0,210,255,.25);}
+.pnode-lbl{font-size:.65rem;color:var(--text3);font-family:var(--mono);text-align:center;line-height:1.4;}
+.pconn{width:50px;position:relative;flex-shrink:0;display:flex;align-items:center;margin-bottom:1.7rem;}
+.pconn::before{content:'';width:100%;height:2px;background:linear-gradient(90deg,var(--border2),var(--cyan));}
+.pconn::after{content:'▶';font-size:.45rem;color:var(--cyan);position:absolute;right:-5px;}
+
+/* ── METRICS CANVAS ──────────────────────────── */
+#metricsCanvas{width:100%;border-radius:8px;}
+#overlapCanvas{width:100%;}
+
+/* ── FOOTER ──────────────────────────────────── */
+footer{padding:3.5rem 2rem;text-align:center;border-top:1px solid var(--border);background:var(--bg);}
+.footer-brand{font-family:var(--disp);font-size:1.4rem;font-weight:700;color:var(--cyan);margin-bottom:.7rem;}
+.footer-brand span{color:var(--green);}
+footer p{color:var(--text3);font-family:var(--mono);font-size:.78rem;margin-bottom:.3rem;}
+footer a{color:var(--cyan);text-decoration:none;}
+
+/* ── MISC ────────────────────────────────────── */
+.glow-hr{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent);}
+.tgl{width:34px;height:18px;border-radius:9px;background:var(--surface3);border:1px solid var(--border);position:relative;cursor:pointer;transition:background .25s;flex-shrink:0;}
+.tgl.on{background:rgba(0,210,255,.25);border-color:var(--cyan);}
+.tgl::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--text3);transition:all .25s;}
+.tgl.on::after{left:18px;background:var(--cyan);}
+.ovlp-badge{display:inline-flex;align-items:center;gap:.25rem;padding:.08rem .45rem;border-radius:3px;font-size:.57rem;font-family:var(--mono);background:rgba(167,139,250,.12);color:var(--violet);border:1px solid rgba(167,139,250,.22);margin-top:.2rem;}
+
+@media(max-width:960px){
+  nav{padding:.9rem 1.2rem;}.nav-links{display:none;}
+  .why-grid,.lab-grid,.step-pane.on,.pg-grid,.cmp-grid,.emb-section,.concepts-grid{grid-template-columns:1fr;}
+  .sec{padding:5rem 1.2rem;}
+}
+</style>
+</head>
+<body>
+
+<div id="c1"></div><div id="c2"></div>
+<div id="prog"></div>
+<div id="tooltip"></div>
+<canvas id="bgc"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">Interactive<span>RAG</span></div>
+  <div class="nav-links">
+    <a class="nav-link" href="#why">Why RAG</a>
+    <a class="nav-link" href="#pipeline">Pipeline</a>
+    <a class="nav-link" href="#chunk-lab">Chunk Lab</a>
+    <a class="nav-link" href="#embed-lab">Embeddings</a>
+    <a class="nav-link" href="#advanced">Advanced</a>
+    <a class="nav-link" href="#playground">Playground</a>
+  </div>
+  <div class="nav-copy">© Vikash Kumar AI Generalist</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-pill">🔬 Vikash Innovative Tech — RAG Complete Course · Basic to Advanced</div>
+  <h1><span style="display:block;color:var(--text);">Master Retrieval-</span><span class="grad-text" style="display:block;">Augmented Generation</span></h1>
+  <p class="hero-sub">A fully dynamic learning experience where RAG comes alive. 
+Adjust chunk sizes, visualize embeddings, simulate retrieval, and watch the entire pipeline react in real time. 
+From beginner clarity to production-grade mastery — all explained in the simplest possible way.From raw documents to a production-grade AI system that answers with precision. Every step explained, every concept interactive, every algorithm visualized live.</p>
+  <div class="hero-ctas">
+    <a href="#why" class="btn btn-prim">▶ Start Learning</a>
+    <a href="#chunk-lab" class="btn btn-ghost">🎮 Open Lab</a>
+  </div>
+  <div class="pipeline-mini">
+    <div class="pm-step"><div class="pm-icon" onclick="jumpStep(0)">📄</div><div class="pm-lbl">Load</div></div><div class="pm-arr"></div>
+    <div class="pm-step"><div class="pm-icon" onclick="jumpStep(1)">🧹</div><div class="pm-lbl">Clean</div></div><div class="pm-arr"></div>
+    <div class="pm-step"><div class="pm-icon" onclick="jumpStep(2)">✂️</div><div class="pm-lbl">Chunk</div></div><div class="pm-arr"></div>
+    <div class="pm-step"><div class="pm-icon" onclick="jumpStep(3)">🔢</div><div class="pm-lbl">Embed</div></div><div class="pm-arr"></div>
+    <div class="pm-step"><div class="pm-icon" onclick="jumpStep(4)">🗄️</div><div class="pm-lbl">Store</div></div><div class="pm-arr"></div>
+    <div class="pm-step"><div class="pm-icon" onclick="jumpStep(5)">🔍</div><div class="pm-lbl">Retrieve</div></div><div class="pm-arr"></div>
+    <div class="pm-step"><div class="pm-icon" onclick="jumpStep(6)">🤖</div><div class="pm-lbl">Generate</div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- WHY RAG -->
+<section class="sec" id="why">
+<div class="sec-inner">
+  <div class="sec-tag rv">Chapter 00 — Foundation</div>
+  <h2 class="sec-h rv rv1">What is RAG & Why It Exists</h2>
+  <p class="sec-sub rv rv2">LLMs hallucinate and know nothing about your private data. RAG solves both problems permanently.</p>
+  <div class="metrics rv rv3">
+    <div class="met"><div class="met-v">97%</div><div class="met-l">ACCURACY LIFT</div></div>
+    <div class="met"><div class="met-v">~0</div><div class="met-l">HALLUCINATIONS*</div></div>
+    <div class="met"><div class="met-v">∞</div><div class="met-l">KNOWLEDGE FRESHNESS</div></div>
+    <div class="met"><div class="met-v">5ms</div><div class="met-l">RETRIEVAL LATENCY</div></div>
+  </div>
+  <div class="why-grid" style="margin-top:2.5rem;">
+    <div class="why-card prob rv rv1">
+      <div class="wi">🧠</div><h3>Problem 1 — Private Data</h3>
+      <p>LLMs train on public internet data. They have zero knowledge of your company documents, internal policies, Vikash Innovative Tech product specs, customer data, or anything created after their training cutoff. Ask them about your business and they'll confidently fabricate answers.</p>
+    </div>
+    <div class="why-card prob rv rv2">
+      <div class="wi">🎭</div><h3>Problem 2 — Hallucinations</h3>
+      <p>LLMs generate statistically plausible text, not factually verified text. They will invent citations, make up statistics, and state wrong dates with total confidence. In production systems, this is catastrophic and litigious.</p>
+    </div>
+    <div class="why-card sol rv rv3">
+      <div class="wi">⚡</div><h3>Solution — RAG</h3>
+      <p>Think of it as an open-book exam. Before answering any question, the system retrieves the most relevant pages from your document library. The LLM sees those pages and answers <strong>only from that retrieved context</strong> — grounded, sourced, verifiable.</p>
+    </div>
+  </div>
+  <div style="margin-top:2.5rem;padding:1.5rem 1.8rem;background:var(--surface);border:1px solid var(--border2);border-radius:14px;" class="rv rv1">
+    <div style="font-size:.68rem;font-family:var(--mono);color:var(--cyan);letter-spacing:.15em;margin-bottom:.8rem;">THE CORE IDEA — ONE SENTENCE</div>
+    <div style="font-family:var(--disp);font-size:1.3rem;font-weight:600;color:var(--text);line-height:1.5;">Retrieve the <span style="color:var(--cyan)">most relevant chunks</span> of your data, inject them as <span style="color:var(--green)">context</span> into the prompt, and let the LLM <span style="color:var(--violet)">answer only from that context</span>.</div>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FULL PIPELINE ARCHITECTURE -->
+<section class="sec" id="arch" style="background:var(--bg1);">
+<div class="sec-inner" style="text-align:center;">
+  <div class="sec-tag rv" style="justify-content:center;">Chapter 00.5 — Architecture</div>
+  <h2 class="sec-h rv rv1">End-to-End RAG Architecture</h2>
+  <p class="sec-sub rv rv2" style="max-width:600px;margin:0 auto;">Click any stage to jump straight to its deep-dive section with code and interactive demo.</p>
+  <div class="pipeline-full rv rv3">
+    <div class="pnode" onclick="jumpStep(0)"><div class="pnode-box">📄</div><div class="pnode-lbl">Doc<br>Loading</div></div>
+    <div class="pconn"></div>
+    <div class="pnode" onclick="jumpStep(1)"><div class="pnode-box">🧹</div><div class="pnode-lbl">Text<br>Preprocessing</div></div>
+    <div class="pconn"></div>
+    <div class="pnode" onclick="jumpStep(2)"><div class="pnode-box">✂️</div><div class="pnode-lbl">Chunking</div></div>
+    <div class="pconn"></div>
+    <div class="pnode" onclick="jumpStep(3)"><div class="pnode-box">🔢</div><div class="pnode-lbl">Embeddings</div></div>
+    <div class="pconn"></div>
+    <div class="pnode" onclick="jumpStep(4)"><div class="pnode-box">🗄️</div><div class="pnode-lbl">Vector<br>Store</div></div>
+    <div class="pconn"></div>
+    <div class="pnode" onclick="jumpStep(5)"><div class="pnode-box">🔍</div><div class="pnode-lbl">Retrieval</div></div>
+    <div class="pconn"></div>
+    <div class="pnode" onclick="jumpStep(6)"><div class="pnode-box">🤖</div><div class="pnode-lbl">LLM +<br>Generate</div></div>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 7-STEP PIPELINE DEEP DIVE -->
+<section class="sec" id="pipeline">
+<div class="sec-inner">
+  <div class="sec-tag rv">Chapter 01 — The Pipeline</div>
+  <h2 class="sec-h rv rv1">7 Steps, Zero Gaps</h2>
+  <p class="sec-sub rv rv2">Every step explained with production-grade Python code, gotchas, and live demos.</p>
+  <div class="step-nav rv rv3">
+    <button class="stab on" onclick="showStep(0)">01 Load</button>
+    <button class="stab" onclick="showStep(1)">02 Preprocess</button>
+    <button class="stab" onclick="showStep(2)">03 Chunk</button>
+    <button class="stab" onclick="showStep(3)">04 Embed</button>
+    <button class="stab" onclick="showStep(4)">05 Vector Store</button>
+    <button class="stab" onclick="showStep(5)">06 Retrieve</button>
+    <button class="stab" onclick="showStep(6)">07 Generate</button>
+  </div>
+
+  <!-- STEP 0: LOAD -->
+  <div class="step-pane on" id="sp0" style="margin-top:2.5rem;">
+    <div>
+      <div class="step-num">Step 01 / Document Loading</div>
+      <h3 class="step-h">Get Text Out<br>of Your Files</h3>
+      <p class="step-p">Before anything can happen, we need raw text. PDFs, Word docs, plain text, HTML — all become a standardized Python dict: <strong style="color:var(--cyan)">{ "content": text, "metadata": {...} }</strong>. That's the atomic unit of RAG.</p>
+      <div class="ibox tip"><div class="ibox-ico">💡</div><p><strong>What is a document in RAG?</strong> A Python dict with two keys: <code style="color:var(--cyan)">content</code> (the raw text) and <code style="color:var(--cyan)">metadata</code> (source filename, page number, section, etc.). Everything downstream depends on this structure being consistent.</p></div>
+      <div class="ibox warn"><div class="ibox-ico">⚠️</div><p><strong>Metadata is gold.</strong> Always attach source filename and page number. When the LLM answers a Vikash Innovative Tech policy question, the user can see exactly which document page it came from. That's what makes RAG trustworthy.</p></div>
+      <div class="ibox info"><div class="ibox-ico">📂</div><p><strong>Supported loaders:</strong> pdfplumber / pypdf (PDF), python-docx (Word), beautifulsoup4 (HTML), csv reader, direct open() for .txt and .md. Use the right loader for each file type.</p></div>
+    </div>
+    <div class="code-panel">
+      <div class="code-hd"><div class="dots"><span></span><span></span><span></span></div><span class="fname">step_01_load.py</span><button class="cpbtn" onclick="cp(this)">COPY</button></div>
+      <div class="code-bd"><pre><span class="cm"># ── Step 01: Document Loading ──────────────────────</span>
+<span class="cm"># Vikash Innovative Tech — RAG Pipeline</span>
+<span class="kw">import</span> <span class="cls">pdfplumber</span>
+<span class="kw">import</span> <span class="var">os</span>
+
+<span class="kw">def</span> <span class="fn">load_pdf</span>(<span class="var">file_path</span>: <span class="cls">str</span>) -> <span class="cls">list</span>[<span class="cls">dict</span>]:
+    <span class="str">"""Load PDF and extract text page-by-page."""</span>
+    <span class="var">documents</span> = []
+    <span class="kw">with</span> <span class="cls">pdfplumber</span>.<span class="fn">open</span>(<span class="var">file_path</span>) <span class="kw">as</span> <span class="var">pdf</span>:
+        <span class="kw">for</span> <span class="var">i</span>, <span class="var">page</span> <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="var">pdf</span>.pages):
+            <span class="var">text</span> = <span class="var">page</span>.<span class="fn">extract_text</span>()
+            <span class="kw">if</span> <span class="var">text</span> <span class="kw">and</span> <span class="fn">len</span>(<span class="var">text</span>.strip()) > <span class="num">20</span>:
+                <span class="var">documents</span>.<span class="fn">append</span>({
+                    <span class="str">"content"</span>: <span class="var">text</span>,
+                    <span class="str">"metadata"</span>: {
+                        <span class="str">"source"</span>: <span class="var">file_path</span>,
+                        <span class="str">"page"</span>: <span class="var">i</span> + <span class="num">1</span>,
+                        <span class="str">"type"</span>: <span class="str">"pdf"</span>,
+                        <span class="str">"company"</span>: <span class="str">"Vikash Innovative Tech"</span>
+                    }
+                })
+    <span class="kw">return</span> <span class="var">documents</span>
+
+<span class="kw">def</span> <span class="fn">load_text</span>(<span class="var">path</span>: <span class="cls">str</span>) -> <span class="cls">list</span>[<span class="cls">dict</span>]:
+    <span class="str">"""Load plain text file as single document."""</span>
+    <span class="kw">with</span> <span class="fn">open</span>(<span class="var">path</span>, <span class="str">"r"</span>, encoding=<span class="str">"utf-8"</span>) <span class="kw">as</span> <span class="var">f</span>:
+        <span class="var">text</span> = <span class="var">f</span>.<span class="fn">read</span>()
+    <span class="kw">return</span> [{
+        <span class="str">"content"</span>: <span class="var">text</span>,
+        <span class="str">"metadata"</span>: {
+            <span class="str">"source"</span>: <span class="var">path</span>,
+            <span class="str">"page"</span>: <span class="num">1</span>,
+            <span class="str">"type"</span>: <span class="str">"text"</span>
+        }
+    }]
+
+<span class="kw">def</span> <span class="fn">load_directory</span>(<span class="var">dir_path</span>: <span class="cls">str</span>) -> <span class="cls">list</span>[<span class="cls">dict</span>]:
+    <span class="str">"""Load all supported files in a directory."""</span>
+    <span class="var">loaders</span> = {<span class="str">".pdf"</span>: <span class="fn">load_pdf</span>, <span class="str">".txt"</span>: <span class="fn">load_text</span>}
+    <span class="var">all_docs</span> = []
+    <span class="kw">for</span> <span class="var">fn</span> <span class="kw">in</span> <span class="var">os</span>.<span class="fn">listdir</span>(<span class="var">dir_path</span>):
+        <span class="var">ext</span> = <span class="var">os</span>.path.<span class="fn">splitext</span>(<span class="var">fn</span>)[<span class="num">1</span>]
+        <span class="kw">if</span> <span class="var">ext</span> <span class="kw">in</span> <span class="var">loaders</span>:
+            <span class="var">docs</span> = <span class="var">loaders</span>[<span class="var">ext</span>](<span class="var">os</span>.path.<span class="fn">join</span>(<span class="var">dir_path</span>, <span class="var">fn</span>))
+            <span class="var">all_docs</span>.<span class="fn">extend</span>(<span class="var">docs</span>)
+    <span class="kw">return</span> <span class="var">all_docs</span>
+
+<span class="cm"># ── Usage ──────────────────────────────────────────</span>
+<span class="var">docs</span> = <span class="fn">load_pdf</span>(<span class="str">"vik_policy.pdf"</span>)
+<span class="fn">print</span>(<span class="fn">f</span><span class="str">"Loaded {<span class="fn">len</span>(<span class="var">docs</span>)} pages"</span>)
+<span class="cm"># → Loaded 4 pages</span>
+<span class="cm"># docs[0] = {</span>
+<span class="cm">#   "content": "Vikash Innovative Tech\nWarranty Policy...",</span>
+<span class="cm">#   "metadata": {"source": "vik_policy.pdf", "page": 1, ...}</span>
+<span class="cm"># }</span></pre></div>
+    </div>
+  </div>
+
+  <!-- STEP 1: PREPROCESS -->
+  <div class="step-pane" id="sp1" style="margin-top:2.5rem;">
+    <div>
+      <div class="step-num">Step 02 / Text Preprocessing</div>
+      <h3 class="step-h">Clean the<br>Noisy Raw Text</h3>
+      <p class="step-p">Raw PDF text is messy — broken sentences, double spaces, weird Unicode, stray headers. Embeddings work better on clean text. This step is unglamorous but critical.</p>
+      <div class="ibox tip"><div class="ibox-ico">🧹</div><p><strong>What to fix:</strong> Multiple whitespace → single space. Mid-sentence line breaks → spaces. Non-printable chars → strip. Page headers/footers → remove. The goal: clean, readable prose.</p></div>
+      <div class="ibox warn"><div class="ibox-ico">⚠️</div><p><strong>Don't over-clean!</strong> Removing too aggressively destroys semantic content. Keep punctuation, numbers, proper nouns, and acronyms intact. Vikash Innovative Tech product names must survive cleaning.</p></div>
+      <div class="ba-grid">
+        <div class="ba-col" style="background:rgba(251,113,133,.04);">
+          <div class="ba-lbl" style="color:var(--rose);">✗ BEFORE</div>
+          <div class="ba-txt">"Vikash   Innovative Tech\n  policy   allows 24  paid\nleaves per   year.   Contact\nHR@vikash  .com"</div>
+        </div>
+        <div class="ba-col" style="background:rgba(0,255,157,.04);">
+          <div class="ba-lbl" style="color:var(--green);">✓ AFTER</div>
+          <div class="ba-txt">"Vikash Innovative Tech policy allows 24 paid leaves per year. Contact HR@vikash.com"</div>
+        </div>
+      </div>
+    </div>
+    <div class="code-panel">
+      <div class="code-hd"><div class="dots"><span></span><span></span><span></span></div><span class="fname">step_02_preprocess.py</span><button class="cpbtn" onclick="cp(this)">COPY</button></div>
+      <div class="code-bd"><pre><span class="cm"># ── Step 02: Text Preprocessing ──────────────────</span>
+<span class="kw">import</span> <span class="var">re</span>
+<span class="kw">import</span> <span class="var">unicodedata</span>
+
+<span class="kw">def</span> <span class="fn">clean_text</span>(<span class="var">text</span>: <span class="cls">str</span>) -> <span class="cls">str</span>:
+    <span class="str">"""Normalize text for embedding quality."""</span>
+    <span class="cm"># Normalize unicode (e.g. curly quotes → straight)</span>
+    <span class="var">text</span> = <span class="var">unicodedata</span>.<span class="fn">normalize</span>(<span class="str">"NFKC"</span>, <span class="var">text</span>)
+    <span class="cm"># Fix mid-sentence line breaks</span>
+    <span class="var">text</span> = <span class="var">re</span>.<span class="fn">sub</span>(<span class="str">r'(?&lt;![.!?])\n(?=[a-z])'</span>, <span class="str">' '</span>, <span class="var">text</span>)
+    <span class="cm"># Collapse multiple spaces / tabs</span>
+    <span class="var">text</span> = <span class="var">re</span>.<span class="fn">sub</span>(<span class="str">r'[ \t]+'</span>, <span class="str">' '</span>, <span class="var">text</span>)
+    <span class="cm"># Normalize multiple newlines → double</span>
+    <span class="var">text</span> = <span class="var">re</span>.<span class="fn">sub</span>(<span class="str">r'\n{3,}'</span>, <span class="str">'\n\n'</span>, <span class="var">text</span>)
+    <span class="cm"># Strip non-printable characters</span>
+    <span class="var">text</span> = <span class="var">re</span>.<span class="fn">sub</span>(<span class="str">r'[^\x20-\x7E\n]'</span>, <span class="str">''</span>, <span class="var">text</span>)
+    <span class="cm"># Remove page numbers / standalone numbers</span>
+    <span class="var">text</span> = <span class="var">re</span>.<span class="fn">sub</span>(<span class="str">r'^\d+\s*$'</span>, <span class="str">''</span>, <span class="var">text</span>, flags=<span class="var">re</span>.MULTILINE)
+    <span class="kw">return</span> <span class="var">text</span>.<span class="fn">strip</span>()
+
+<span class="kw">def</span> <span class="fn">preprocess_documents</span>(<span class="var">docs</span>: <span class="cls">list</span>) -> <span class="cls">list</span>:
+    <span class="str">"""Clean all documents in pipeline."""</span>
+    <span class="var">cleaned</span> = []
+    <span class="kw">for</span> <span class="var">doc</span> <span class="kw">in</span> <span class="var">docs</span>:
+        <span class="var">clean</span> = <span class="fn">clean_text</span>(<span class="var">doc</span>[<span class="str">"content"</span>])
+        <span class="kw">if</span> <span class="fn">len</span>(<span class="var">clean</span>) > <span class="num">30</span>:  <span class="cm"># skip near-empty pages</span>
+            <span class="var">doc</span>[<span class="str">"content"</span>] = <span class="var">clean</span>
+            <span class="var">cleaned</span>.<span class="fn">append</span>(<span class="var">doc</span>)
+    <span class="kw">return</span> <span class="var">cleaned</span>
+
+<span class="cm"># ── Usage ──────────────────────────────────────────</span>
+<span class="var">cleaned_docs</span> = <span class="fn">preprocess_documents</span>(<span class="var">docs</span>)
+<span class="fn">print</span>(<span class="fn">f</span><span class="str">"Cleaned: {<span class="fn">len</span>(<span class="var">cleaned_docs</span>)} docs remain"</span>)
+<span class="fn">print</span>(<span class="var">cleaned_docs</span>[<span class="num">0</span>][<span class="str">"content"</span>][:<span class="num">200</span>])
+<span class="cm"># → Vikash Innovative Tech Warranty Policy</span>
+<span class="cm">#   All laptops come with a 1-year limited warranty...</span></pre></div>
+    </div>
+  </div>
+
+  <!-- STEP 2: CHUNK (mini preview — full lab below) -->
+  <div class="step-pane" id="sp2" style="margin-top:2.5rem;">
+    <div>
+      <div class="step-num">Step 03 / Chunking</div>
+      <h3 class="step-h">Split Into<br>Smart Pieces</h3>
+      <p class="step-p">Documents are too long to embed directly. We split into "chunks" — this is the <strong style="color:var(--amber)">single most important decision in RAG</strong>. Wrong chunk size = bad retrieval = wrong answers.</p>
+      <div class="ibox warn"><div class="ibox-ico">⚖️</div><p><strong>The Core Trade-off:</strong> Chunks too large → retrieval brings back irrelevant noise. Chunks too small → you lose semantic context and answers become shallow. Sweet spot: 200–400 chars for most docs.</p></div>
+      <div class="ibox tip"><div class="ibox-ico">🔀</div><p><strong>Overlap matters.</strong> A 50–80 char overlap between adjacent chunks ensures sentences at boundaries are never cut off. Always use overlap in production.</p></div>
+      <div class="ibox info"><div class="ibox-ico">🌿</div><p><strong>3 Strategies:</strong> Fixed Size (equal chunks), Sliding Window (overlapping windows), Recursive Splitter (paragraph→sentence→word priority). Full interactive lab below ↓</p></div>
+      <a href="#chunk-lab" class="btn btn-prim" style="margin-top:.5rem;display:inline-block;">🎮 Open Full Chunking Lab</a>
+    </div>
+    <div class="code-panel">
+      <div class="code-hd"><div class="dots"><span></span><span></span><span></span></div><span class="fname">step_03_chunk.py</span><button class="cpbtn" onclick="cp(this)">COPY</button></div>
+      <div class="code-bd"><pre><span class="cm"># ── Step 03: Chunking (all 3 strategies) ─────────</span>
+<span class="kw">import</span> <span class="var">re</span>
+
+<span class="cm"># ── Strategy 1: Fixed Size ────────────────────────</span>
+<span class="kw">def</span> <span class="fn">chunk_fixed</span>(<span class="var">text</span>, <span class="var">size</span>=<span class="num">300</span>):
+    <span class="kw">return</span> [<span class="var">text</span>[<span class="var">i</span>:<span class="var">i</span>+<span class="var">size</span>].<span class="fn">strip</span>()
+            <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="num">0</span>,<span class="fn">len</span>(<span class="var">text</span>),<span class="var">size</span>)
+            <span class="kw">if</span> <span class="var">text</span>[<span class="var">i</span>:<span class="var">i</span>+<span class="var">size</span>].<span class="fn">strip</span>()]
+
+<span class="cm"># ── Strategy 2: Sliding Window ────────────────────</span>
+<span class="kw">def</span> <span class="fn">chunk_sliding</span>(<span class="var">text</span>, <span class="var">size</span>=<span class="num">300</span>, <span class="var">overlap</span>=<span class="num">60</span>):
+    <span class="var">chunks</span>, <span class="var">i</span> = [], <span class="num">0</span>
+    <span class="kw">while</span> <span class="var">i</span> < <span class="fn">len</span>(<span class="var">text</span>):
+        <span class="var">end</span> = <span class="fn">min</span>(<span class="var">i</span>+<span class="var">size</span>, <span class="fn">len</span>(<span class="var">text</span>))
+        <span class="var">t</span> = <span class="var">text</span>[<span class="var">i</span>:<span class="var">end</span>].<span class="fn">strip</span>()
+        <span class="kw">if</span> <span class="var">t</span>: <span class="var">chunks</span>.<span class="fn">append</span>(<span class="var">t</span>)
+        <span class="kw">if</span> <span class="var">end</span> == <span class="fn">len</span>(<span class="var">text</span>): <span class="kw">break</span>
+        <span class="var">i</span> += <span class="var">size</span> - <span class="var">overlap</span>
+    <span class="kw">return</span> <span class="var">chunks</span>
+
+<span class="cm"># ── Strategy 3: Recursive Splitter ───────────────</span>
+<span class="kw">def</span> <span class="fn">chunk_recursive</span>(<span class="var">text</span>, <span class="var">size</span>=<span class="num">300</span>,
+                     <span class="var">seps</span>=[<span class="str">'\n\n'</span>,<span class="str">'\n'</span>,<span class="str">'. '</span>,<span class="str">'! '</span>,<span class="str">' '</span>]):
+    <span class="kw">if</span> <span class="fn">len</span>(<span class="var">text</span>) <= <span class="var">size</span>: <span class="kw">return</span> [<span class="var">text</span>.<span class="fn">strip</span>()]
+    <span class="var">sep</span> = <span class="kw">next</span>((<span class="var">s</span> <span class="kw">for</span> <span class="var">s</span> <span class="kw">in</span> <span class="var">seps</span> <span class="kw">if</span> <span class="var">s</span> <span class="kw">in</span> <span class="var">text</span>), <span class="str">' '</span>)
+    <span class="var">parts</span> = <span class="var">text</span>.<span class="fn">split</span>(<span class="var">sep</span>)
+    <span class="var">chunks</span>, <span class="var">cur</span> = [], <span class="str">""</span>
+    <span class="kw">for</span> <span class="var">p</span> <span class="kw">in</span> <span class="var">parts</span>:
+        <span class="var">candidate</span> = <span class="var">cur</span> + (<span class="var">sep</span> <span class="kw">if</span> <span class="var">cur</span> <span class="kw">else</span> <span class="str">""</span>) + <span class="var">p</span>
+        <span class="kw">if</span> <span class="fn">len</span>(<span class="var">candidate</span>) <= <span class="var">size</span>: <span class="var">cur</span> = <span class="var">candidate</span>
+        <span class="kw">else</span>:
+            <span class="kw">if</span> <span class="var">cur</span>.<span class="fn">strip</span>(): <span class="var">chunks</span>.<span class="fn">append</span>(<span class="var">cur</span>.<span class="fn">strip</span>())
+            <span class="var">cur</span> = <span class="var">p</span>
+    <span class="kw">if</span> <span class="var">cur</span>.<span class="fn">strip</span>(): <span class="var">chunks</span>.<span class="fn">append</span>(<span class="var">cur</span>.<span class="fn">strip</span>())
+    <span class="kw">return</span> [<span class="var">c</span> <span class="kw">for</span> <span class="var">c</span> <span class="kw">in</span> <span class="var">chunks</span> <span class="kw">if</span> <span class="fn">len</span>(<span class="var">c</span>) >= <span class="num">15</span>]
+
+<span class="cm"># ── Wrap chunks with metadata ─────────────────────</span>
+<span class="kw">def</span> <span class="fn">chunk_documents</span>(<span class="var">docs</span>, <span class="var">strategy</span>=<span class="str">"recursive"</span>, **<span class="var">kw</span>):
+    <span class="var">fn_map</span> = {
+        <span class="str">"fixed"</span>: <span class="fn">chunk_fixed</span>,
+        <span class="str">"sliding"</span>: <span class="fn">chunk_sliding</span>,
+        <span class="str">"recursive"</span>: <span class="fn">chunk_recursive</span>
+    }
+    <span class="var">fn</span> = <span class="var">fn_map</span>[<span class="var">strategy</span>]
+    <span class="var">all_chunks</span> = []
+    <span class="kw">for</span> <span class="var">doc</span> <span class="kw">in</span> <span class="var">docs</span>:
+        <span class="kw">for</span> <span class="var">j</span>, <span class="var">txt</span> <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="fn">fn</span>(<span class="var">doc</span>[<span class="str">"content"</span>], **<span class="var">kw</span>)):
+            <span class="var">all_chunks</span>.<span class="fn">append</span>({
+                <span class="str">"content"</span>: <span class="var">txt</span>,
+                <span class="str">"metadata"</span>: {**<span class="var">doc</span>[<span class="str">"metadata"</span>], <span class="str">"chunk"</span>: <span class="var">j</span>}
+            })
+    <span class="kw">return</span> <span class="var">all_chunks</span>
+
+<span class="var">chunks</span> = <span class="fn">chunk_documents</span>(<span class="var">cleaned_docs</span>, strategy=<span class="str">"recursive"</span>, size=<span class="num">300</span>)
+<span class="fn">print</span>(<span class="fn">f</span><span class="str">"Created {<span class="fn">len</span>(<span class="var">chunks</span>)} chunks"</span>)
+<span class="cm"># → Created 22 chunks</span></pre></div>
+    </div>
+  </div>
+
+  <!-- STEP 3: EMBED -->
+  <div class="step-pane" id="sp3" style="margin-top:2.5rem;">
+    <div>
+      <div class="step-num">Step 04 / Embeddings</div>
+      <h3 class="step-h">Turn Text Into<br>Meaning-Vectors</h3>
+      <p class="step-p">Embeddings convert text to a list of numbers — a vector in high-dimensional space. The magic: semantically similar texts get numerically similar vectors. This enables <strong style="color:var(--violet)">semantic search</strong>, not keyword matching.</p>
+      <div class="ibox tip"><div class="ibox-ico">🧮</div><p><strong>What is an embedding?</strong> A 768- or 1536-dimensional vector. "Warranty" and "guarantee" sit close together. "Warranty" and "pizza" sit far apart. We retrieve by spatial proximity — finding nearest neighbors.</p></div>
+      <div class="ibox warn"><div class="ibox-ico">🔑</div><p><strong>Critical rule:</strong> Always use the SAME embedding model for both chunks and queries. Mixing models makes similarity scores meaningless — like measuring distance in miles vs kilometers.</p></div>
+      <div class="ibox info"><div class="ibox-ico">💰</div><p><strong>Model choices:</strong> OpenAI text-embedding-3-small (fast, cheap, great), all-MiniLM-L6-v2 (free, local, good), BAAI/bge-large (best open-source), Cohere embed-v3 (multilingual).</p></div>
+      <a href="#embed-lab" class="btn btn-prim" style="margin-top:.5rem;display:inline-block;">🔮 Open Embedding Lab</a>
+    </div>
+    <div class="code-panel">
+      <div class="code-hd"><div class="dots"><span></span><span></span><span></span></div><span class="fname">step_04_embed.py</span><button class="cpbtn" onclick="cp(this)">COPY</button></div>
+      <div class="code-bd"><pre><span class="cm"># ── Step 04: Embeddings ──────────────────────────</span>
+<span class="kw">from</span> <span class="cls">openai</span> <span class="kw">import</span> <span class="cls">OpenAI</span>
+<span class="kw">from</span> <span class="cls">sentence_transformers</span> <span class="kw">import</span> <span class="cls">SentenceTransformer</span>
+<span class="kw">import</span> <span class="var">numpy</span> <span class="kw">as</span> <span class="var">np</span>
+
+<span class="cm"># ── Option A: OpenAI (paid, production) ───────────</span>
+<span class="var">oai</span> = <span class="cls">OpenAI</span>()
+
+<span class="kw">def</span> <span class="fn">embed_openai</span>(<span class="var">texts</span>: <span class="cls">list</span>[<span class="cls">str</span>]) -> <span class="cls">list</span>:
+    <span class="var">resp</span> = <span class="var">oai</span>.embeddings.<span class="fn">create</span>(
+        input=<span class="var">texts</span>,
+        model=<span class="str">"text-embedding-3-small"</span>  <span class="cm"># 1536 dims</span>
+    )
+    <span class="kw">return</span> [<span class="var">d</span>.embedding <span class="kw">for</span> <span class="var">d</span> <span class="kw">in</span> <span class="var">resp</span>.data]
+
+<span class="cm"># ── Option B: Sentence Transformers (free) ─────────</span>
+<span class="var">model</span> = <span class="cls">SentenceTransformer</span>(<span class="str">"all-MiniLM-L6-v2"</span>)
+
+<span class="kw">def</span> <span class="fn">embed_local</span>(<span class="var">texts</span>: <span class="cls">list</span>[<span class="cls">str</span>]) -> <span class="var">np</span>.<span class="cls">ndarray</span>:
+    <span class="kw">return</span> <span class="var">model</span>.<span class="fn">encode</span>(<span class="var">texts</span>, batch_size=<span class="num">32</span>,
+                         show_progress_bar=<span class="kw">True</span>)
+
+<span class="cm"># ── Embed all chunks in batches ───────────────────</span>
+<span class="kw">def</span> <span class="fn">embed_chunks</span>(<span class="var">chunks</span>, <span class="var">batch_size</span>=<span class="num">100</span>):
+    <span class="var">texts</span> = [<span class="var">c</span>[<span class="str">"content"</span>] <span class="kw">for</span> <span class="var">c</span> <span class="kw">in</span> <span class="var">chunks</span>]
+    <span class="var">all_emb</span> = []
+    <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="num">0</span>, <span class="fn">len</span>(<span class="var">texts</span>), <span class="var">batch_size</span>):
+        <span class="var">batch</span> = <span class="var">texts</span>[<span class="var">i</span>:<span class="var">i</span>+<span class="var">batch_size</span>]
+        <span class="var">all_emb</span>.<span class="fn">extend</span>(<span class="fn">embed_openai</span>(<span class="var">batch</span>))
+    <span class="kw">return</span> <span class="var">all_emb</span>
+
+<span class="var">embeddings</span> = <span class="fn">embed_chunks</span>(<span class="var">chunks</span>)
+<span class="fn">print</span>(<span class="fn">f</span><span class="str">"Shape: {<span class="var">np</span>.<span class="fn">array</span>(<span class="var">embeddings</span>).shape}"</span>)
+<span class="cm"># → Shape: (22, 1536)</span>
+
+<span class="cm"># ── Manual cosine similarity ──────────────────────</span>
+<span class="kw">def</span> <span class="fn">cosine_sim</span>(<span class="var">a</span>, <span class="var">b</span>):
+    <span class="var">a</span>, <span class="var">b</span> = <span class="var">np</span>.<span class="fn">array</span>(<span class="var">a</span>), <span class="var">np</span>.<span class="fn">array</span>(<span class="var">b</span>)
+    <span class="kw">return</span> <span class="fn">float</span>(<span class="var">np</span>.<span class="fn">dot</span>(<span class="var">a</span>,<span class="var">b</span>) / (<span class="var">np</span>.<span class="fn">linalg</span>.<span class="fn">norm</span>(<span class="var">a</span>)*<span class="var">np</span>.<span class="fn">linalg</span>.<span class="fn">norm</span>(<span class="var">b</span>)))</pre></div>
+    </div>
+  </div>
+
+  <!-- STEP 4: VECTOR STORE -->
+  <div class="step-pane" id="sp4" style="margin-top:2.5rem;">
+    <div>
+      <div class="step-num">Step 05 / Vector Store</div>
+      <h3 class="step-h">Store &amp; Index<br>All Embeddings</h3>
+      <p class="step-p">A vector database stores embeddings and lets you query them by similarity — not SQL WHERE clauses, but <strong style="color:var(--cyan)">cosine distance search</strong>. Give it a query vector, get back the N closest chunk vectors.</p>
+      <div class="ibox tip"><div class="ibox-ico">🗄️</div><p><strong>ChromaDB</strong> — perfect for prototyping. In-memory or disk-persistent, zero config, Python-native. For production: Pinecone (managed cloud), Weaviate, Qdrant (open-source), pgvector (PostgreSQL).</p></div>
+      <div class="ibox info"><div class="ibox-ico">📐</div><p><strong>Vector DB vs SQL:</strong> SQL searches by exact value match. Vector DB searches by angle between vectors — "find the 3 chunks that mean the most similar thing to this query." Fundamentally different operation.</p></div>
+      <div class="ibox warn"><div class="ibox-ico">⚡</div><p><strong>Index your collection.</strong> Without an index (HNSW), vector search is O(n) — it compares every vector. With HNSW index, search is O(log n). Critical for production with millions of chunks.</p></div>
+    </div>
+    <div class="code-panel">
+      <div class="code-hd"><div class="dots"><span></span><span></span><span></span></div><span class="fname">step_05_vector_store.py</span><button class="cpbtn" onclick="cp(this)">COPY</button></div>
+      <div class="code-bd"><pre><span class="cm"># ── Step 05: Vector Store (ChromaDB) ─────────────</span>
+<span class="kw">import</span> <span class="var">chromadb</span>
+<span class="kw">from</span> <span class="var">chromadb</span>.<span class="var">config</span> <span class="kw">import</span> <span class="cls">Settings</span>
+
+<span class="cm"># ── Persistent client (survives restarts) ─────────</span>
+<span class="var">client</span> = <span class="var">chromadb</span>.<span class="cls">PersistentClient</span>(
+    path=<span class="str">"./vikash_rag_db"</span>
+)
+
+<span class="cm"># ── Create or load collection ─────────────────────</span>
+<span class="var">collection</span> = <span class="var">client</span>.<span class="fn">get_or_create_collection</span>(
+    name=<span class="str">"vikash_innovative_tech"</span>,
+    metadata={<span class="str">"hnsw:space"</span>: <span class="str">"cosine"</span>}  <span class="cm"># cosine dist</span>
+)
+
+<span class="kw">def</span> <span class="fn">store_chunks</span>(<span class="var">chunks</span>, <span class="var">embeddings</span>):
+    <span class="str">"""Add chunks + embeddings to ChromaDB."""</span>
+    <span class="var">collection</span>.<span class="fn">add</span>(
+        documents=[<span class="var">c</span>[<span class="str">"content"</span>] <span class="kw">for</span> <span class="var">c</span> <span class="kw">in</span> <span class="var">chunks</span>],
+        embeddings=<span class="var">embeddings</span>,
+        metadatas=[<span class="var">c</span>[<span class="str">"metadata"</span>] <span class="kw">for</span> <span class="var">c</span> <span class="kw">in</span> <span class="var">chunks</span>],
+        ids=[<span class="fn">str</span>(<span class="var">i</span>) <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(<span class="var">chunks</span>))]
+    )
+    <span class="fn">print</span>(<span class="fn">f</span><span class="str">"✓ Stored {<span class="var">collection</span>.<span class="fn">count</span>()} chunks"</span>)
+
+<span class="fn">store_chunks</span>(<span class="var">chunks</span>, <span class="var">embeddings</span>)
+<span class="cm"># → ✓ Stored 22 chunks in vikash_rag_db</span>
+
+<span class="cm"># ── Metadata filtering (powerful feature) ─────────</span>
+<span class="cm"># Find only chunks from warranty policy pages:</span>
+<span class="var">results</span> = <span class="var">collection</span>.<span class="fn">query</span>(
+    query_embeddings=[<span class="var">query_emb</span>],
+    n_results=<span class="num">3</span>,
+    where={<span class="str">"source"</span>: <span class="str">"warranty_policy.pdf"</span>}
+)
+
+<span class="cm"># ── Check if collection already built ─────────────</span>
+<span class="kw">if</span> <span class="var">collection</span>.<span class="fn">count</span>() > <span class="num">0</span>:
+    <span class="fn">print</span>(<span class="str">"Loaded existing index — skip rebuild"</span>)
+<span class="kw">else</span>:
+    <span class="fn">store_chunks</span>(<span class="var">chunks</span>, <span class="var">embeddings</span>)</pre></div>
+    </div>
+  </div>
+
+  <!-- STEP 5: RETRIEVE -->
+  <div class="step-pane" id="sp5" style="margin-top:2.5rem;">
+    <div>
+      <div class="step-num">Step 06 / Retrieval</div>
+      <h3 class="step-h">Find the Right<br>Chunks at Query Time</h3>
+      <p class="step-p">A user asks a question. We embed their query using the same model, then find the K nearest chunks in the vector database. This is where RAG's power becomes visible — semantic matching, not keywords.</p>
+      <div class="ibox tip"><div class="ibox-ico">🎯</div><p><strong>Top-K guideline:</strong> K=3 is a good default. Too low (K=1) and you miss context. Too high (K=20) and you fill the prompt with noise. For Vikash Innovative Tech docs, K=3–5 works well.</p></div>
+      <div class="ibox info"><div class="ibox-ico">📐</div><p><strong>Cosine similarity</strong> returns a score from 0 to 1. Score &gt;0.85 = very relevant. Score 0.6–0.85 = somewhat relevant. Score &lt;0.6 = probably irrelevant — consider filtering these out.</p></div>
+
+      <!-- INTERACTIVE RETRIEVAL DEMO -->
+      <div class="demo-box" style="margin-top:1.5rem;">
+        <div class="demo-hd">🔍 LIVE RETRIEVAL DEMO — Vikash Innovative Tech KB</div>
+        <div class="demo-bd">
+          <div class="qrow">
+            <input class="qinp" id="qinp" value="What is the warranty policy?" placeholder="Ask about Vikash Innovative Tech...">
+            <button class="qbtn" onclick="doRetrieve()">SEARCH</button>
+          </div>
+          <div id="ret-results"></div>
+        </div>
+      </div>
+    </div>
+    <div class="code-panel">
+      <div class="code-hd"><div class="dots"><span></span><span></span><span></span></div><span class="fname">step_06_retrieve.py</span><button class="cpbtn" onclick="cp(this)">COPY</button></div>
+      <div class="code-bd"><pre><span class="cm"># ── Step 06: Retrieval ───────────────────────────</span>
+<span class="kw">import</span> <span class="var">numpy</span> <span class="kw">as</span> <span class="var">np</span>
+
+<span class="kw">def</span> <span class="fn">retrieve</span>(<span class="var">query</span>: <span class="cls">str</span>, <span class="var">k</span>=<span class="num">3</span>) -> <span class="cls">list</span>[<span class="cls">dict</span>]:
+    <span class="str">"""Find k most relevant chunks for a query."""</span>
+    <span class="cm"># 1. Embed the query (same model as chunks!)</span>
+    <span class="var">q_emb</span> = <span class="fn">embed_openai</span>([<span class="var">query</span>])[<span class="num">0</span>]
+
+    <span class="cm"># 2. Query vector store</span>
+    <span class="var">results</span> = <span class="var">collection</span>.<span class="fn">query</span>(
+        query_embeddings=[<span class="var">q_emb</span>],
+        n_results=<span class="var">k</span>
+    )
+
+    <span class="cm"># 3. Format results with similarity scores</span>
+    <span class="var">retrieved</span> = []
+    <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(<span class="var">results</span>[<span class="str">"documents"</span>][<span class="num">0</span>])):
+        <span class="var">sim</span> = <span class="num">1</span> - <span class="var">results</span>[<span class="str">"distances"</span>][<span class="num">0</span>][<span class="var">i</span>]
+        <span class="kw">if</span> <span class="var">sim</span> > <span class="num">0.5</span>:  <span class="cm"># Filter low-relevance</span>
+            <span class="var">retrieved</span>.<span class="fn">append</span>({
+                <span class="str">"text"</span>: <span class="var">results</span>[<span class="str">"documents"</span>][<span class="num">0</span>][<span class="var">i</span>],
+                <span class="str">"score"</span>: <span class="fn">round</span>(<span class="var">sim</span>, <span class="num">4</span>),
+                <span class="str">"source"</span>: <span class="var">results</span>[<span class="str">"metadatas"</span>][<span class="num">0</span>][<span class="var">i</span>],
+            })
+    <span class="kw">return</span> <span class="fn">sorted</span>(<span class="var">retrieved</span>,
+                   key=<span class="kw">lambda</span> <span class="var">x</span>:<span class="var">x</span>[<span class="str">"score"</span>],
+                   reverse=<span class="kw">True</span>)
+
+<span class="cm"># ── Example ───────────────────────────────────────</span>
+<span class="var">results</span> = <span class="fn">retrieve</span>(<span class="str">"What does the warranty cover?"</span>)
+<span class="kw">for</span> <span class="var">r</span> <span class="kw">in</span> <span class="var">results</span>:
+    <span class="fn">print</span>(<span class="fn">f</span><span class="str">"Score: {<span class="var">r</span>[<span class="str">'score'</span>]:.3f}"</span>)
+    <span class="fn">print</span>(<span class="var">r</span>[<span class="str">"text"</span>][:<span class="num">100</span>] + <span class="str">"..."</span>)
+<span class="cm"># → Score: 0.940</span>
+<span class="cm">#   All laptops come with a 1-year limited...</span>
+<span class="cm"># → Score: 0.872</span>
+<span class="cm">#   Warranty covers: manufacturing defects...</span></pre></div>
+    </div>
+  </div>
+
+  <!-- STEP 6: GENERATE -->
+  <div class="step-pane" id="sp6" style="margin-top:2.5rem;">
+    <div>
+      <div class="step-num">Step 07 / Generate</div>
+      <h3 class="step-h">Ground the LLM<br>in Your Context</h3>
+      <p class="step-p">The final step: combine retrieved chunks into a prompt and send to the LLM. The key insight — <strong style="color:var(--rose)">the system prompt must explicitly constrain the LLM to answer only from context</strong>. This eliminates hallucinations.</p>
+      <div class="ibox tip"><div class="ibox-ico">✍️</div><p><strong>Prompt engineering for RAG:</strong> (1) Put context before the question. (2) Tell LLM to say "I don't know" if answer isn't in context. (3) Require source citation. These 3 rules prevent 99% of hallucinations.</p></div>
+      <div class="ibox warn"><div class="ibox-ico">🌡️</div><p><strong>Set temperature=0.1.</strong> Lower temperature = more factual, deterministic answers. Higher temperature = more creative but more likely to drift from the context. For Q&A, stay at 0.0–0.2.</p></div>
+
+      <!-- CHAT DEMO -->
+      <div class="demo-box" style="margin-top:1.5rem;">
+        <div class="demo-hd">💬 VIKASH INNOVATIVE TECH — RAG SUPPORT CHAT</div>
+        <div class="demo-bd">
+          <div class="chat-win">
+            <div class="chat-hd"><div style="width:6px;height:6px;border-radius:50%;background:var(--green);"></div>Vikash AI Support (RAG-powered)</div>
+            <div class="chat-body" id="chatBody">
+              <div class="cmsg user show"><div class="crole">You</div><div class="cbubble">What does the 1-year warranty cover, and what's excluded?</div></div>
+              <div class="cmsg bot" id="aiMsg"><div class="crole">Vikash AI</div><div class="cbubble" id="aiTxt"></div><div class="csrc">📄 vik_policy.pdf, pages 1–2</div></div>
+            </div>
+          </div>
+          <button onclick="restartChat()" style="margin-top:.7rem;width:100%;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.25);color:var(--violet);padding:.5rem;border-radius:7px;font-family:var(--head);font-size:.72rem;font-weight:700;cursor:pointer;">↺ RESTART DEMO</button>
+        </div>
+      </div>
+    </div>
+    <div class="code-panel">
+      <div class="code-hd"><div class="dots"><span></span><span></span><span></span></div><span class="fname">step_07_generate.py</span><button class="cpbtn" onclick="cp(this)">COPY</button></div>
+      <div class="code-bd"><pre><span class="cm"># ── Step 07: LLM + Prompt Engineering ────────────</span>
+<span class="kw">from</span> <span class="cls">openai</span> <span class="kw">import</span> <span class="cls">OpenAI</span>
+
+<span class="var">client</span> = <span class="cls">OpenAI</span>()
+
+<span class="kw">def</span> <span class="fn">build_context</span>(<span class="var">retrieved_chunks</span>):
+    <span class="str">"""Format retrieved chunks as numbered context."""</span>
+    <span class="kw">return</span> <span class="str">"\n\n"</span>.<span class="fn">join</span>(
+        <span class="fn">f</span><span class="str">"[{i+1}] (Source: {c['source'].get('source','?')}, "</span>
+        <span class="fn">f</span><span class="str">"page {c['source'].get('page','?')})\n{c['text']}"</span>
+        <span class="kw">for</span> <span class="var">i</span>, <span class="var">c</span> <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="var">retrieved_chunks</span>)
+    )
+
+<span class="kw">def</span> <span class="fn">rag_answer</span>(<span class="var">question</span>: <span class="cls">str</span>, <span class="var">k</span>=<span class="num">3</span>) -> <span class="cls">str</span>:
+    <span class="str">"""Full RAG: retrieve → prompt → answer."""</span>
+    <span class="cm"># Retrieve relevant chunks</span>
+    <span class="var">chunks</span> = <span class="fn">retrieve</span>(<span class="var">question</span>, k=<span class="var">k</span>)
+    <span class="var">context</span> = <span class="fn">build_context</span>(<span class="var">chunks</span>)
+
+    <span class="cm"># Build system prompt with strict grounding</span>
+    <span class="var">system</span> = <span class="str">"""You are the AI assistant for Vikash Innovative Tech.
+Answer ONLY based on the retrieved context provided.
+If the answer is not in the context, say exactly:
+'I don't have enough information to answer this.'
+Always cite sources as [1], [2], etc.
+Be concise and accurate."""</span>
+
+    <span class="var">response</span> = <span class="var">client</span>.chat.completions.<span class="fn">create</span>(
+        model=<span class="str">"gpt-4o-mini"</span>,
+        messages=[
+            {<span class="str">"role"</span>: <span class="str">"system"</span>, <span class="str">"content"</span>: <span class="var">system</span>},
+            {<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>:
+             <span class="fn">f</span><span class="str">"Context:\n{<span class="var">context</span>}\n\nQuestion: {<span class="var">question</span>}"</span>}
+        ],
+        temperature=<span class="num">0.1</span>
+    )
+    <span class="kw">return</span> <span class="var">response</span>.choices[<span class="num">0</span>].message.content
+
+<span class="cm"># ── Complete pipeline in 3 lines ──────────────────</span>
+<span class="var">answer</span> = <span class="fn">rag_answer</span>(<span class="str">"What does the warranty cover?"</span>)
+<span class="fn">print</span>(<span class="var">answer</span>)
+<span class="cm"># → Based on [1], Vikash Innovative Tech's 1-year</span>
+<span class="cm">#   warranty covers manufacturing defects, hardware</span>
+<span class="cm">#   malfunctions, and faulty components...</span></pre></div>
+    </div>
+  </div>
+
+</div><!-- /sec-inner -->
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════ CHUNK LAB ═══════════ -->
+<section class="sec" id="chunk-lab" style="background:var(--bg1);">
+<div class="sec-inner">
+  <div class="sec-tag rv">Chapter 02 — Interactive Lab</div>
+  <h2 class="sec-h rv rv1">⬛ Chunking Strategy Lab</h2>
+  <p class="sec-sub rv rv2">Drag the sliders, switch strategies, and watch Vikash Innovative Tech policy text re-chunk in real time. Click any colored span to inspect that chunk.</p>
+
+  <!-- METHOD SELECT + CONTROLS -->
+  <div class="card rv rv3" style="margin-top:1.5rem;">
+    <div class="card-head">
+      <div class="card-title"><div class="dot" style="background:var(--cyan)"></div>Chunking Strategy</div>
+      <div id="ck-badge" style="font-family:var(--mono);font-size:.72rem;color:var(--green);"></div>
+    </div>
+    <div class="card-body">
+      <div class="meth-bar">
+        <button class="meth-btn on" onclick="setMeth('fixed')">📏 Fixed Size</button>
+        <button class="meth-btn" onclick="setMeth('sliding')">🪟 Sliding Window</button>
+        <button class="meth-btn" onclick="setMeth('recursive')">🌿 Recursive Splitter</button>
+      </div>
+      <div class="method-exp" id="mexp"></div>
+      <div class="ctrl-row" id="ctrl-row"></div>
+    </div>
+  </div>
+
+  <!-- TEXT VIZ + CHUNK LIST -->
+  <div class="lab-grid" style="margin-top:1.2rem;">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><div class="dot" style="background:var(--green)"></div>Live Text Visualizer</div>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <div id="anim-tgl" class="tgl on" onclick="toggleAnimTgl()"></div>
+          <span style="font-size:.62rem;color:var(--text3);font-family:var(--mono);">ANIM</span>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <div class="tviz" id="tviz"></div>
+        <div style="padding:.8rem 1.2rem;">
+          <div class="stats-bar" id="stats-bar"></div>
+          <div style="margin-top:.8rem;">
+            <div style="font-family:var(--mono);font-size:.62rem;color:var(--text3);letter-spacing:.09em;margin-bottom:.4rem;">CHUNK SIZE DISTRIBUTION</div>
+            <div class="dist-chart" id="dist-chart"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><div class="dot" style="background:var(--amber)"></div>Chunk Inspector</div>
+        <div id="ck-info" style="font-size:.62rem;font-family:var(--mono);color:var(--text3);"></div>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <div style="padding:.9rem 1.1rem 0;" id="active-chunk-view"></div>
+        <div style="padding:.6rem 1.1rem 1rem;"><div class="chunk-list" id="chunk-list"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SWEEP BAR -->
+  <div class="sweep-wrap rv" style="margin-top:1.2rem;">
+    <div style="font-size:.68rem;font-family:var(--mono);color:var(--text3);letter-spacing:.1em;margin-bottom:.6rem;">⚡ PARAMETER SWEEP — Watch chunk count evolve as size changes · Click any bar or press ▶</div>
+    <div class="sweep-chart" id="sweep-chart"></div>
+    <div class="playbar">
+      <button class="pbtn" id="pbtn" onclick="toggleSweep()">▶</button>
+      <div class="ptrack" id="ptrack" onclick="scrubSweep(event)"><div class="pfill" id="pfill" style="width:0%"></div></div>
+      <div class="plbl" id="plbl">size: —</div>
+    </div>
+    <div style="font-family:var(--mono);font-size:.62rem;color:var(--text4);margin-top:.4rem;">Darker = more chunks. Highlighted bar = current setting.</div>
+  </div>
+
+  <!-- METHOD COMPARISON -->
+  <div style="margin-top:2rem;">
+    <h3 class="sec-h rv" style="font-size:1.5rem;margin-bottom:.5rem;">⚖️ Side-by-Side Comparison</h3>
+    <div class="card rv rv1" style="margin-bottom:1rem;">
+      <div class="card-head"><div class="card-title"><div class="dot" style="background:var(--sky,#38bdf8)"></div>Shared Parameters</div></div>
+      <div class="card-body">
+        <div class="ctrl-row" style="max-width:420px;">
+          <div class="ctrl"><div class="ctrl-lbl">Chunk Size <span id="cmp-cs-v">280</span></div><input type="range" min="60" max="500" value="280" id="cmp-cs" oninput="updateCmp()"></div>
+          <div class="ctrl"><div class="ctrl-lbl">Overlap <span id="cmp-ov-v">50</span></div><input type="range" min="0" max="150" value="50" id="cmp-ov" oninput="updateCmp()"></div>
+        </div>
+      </div>
+    </div>
+    <div class="cmp-grid" id="cmp-grid"></div>
+    <div class="card rv rv2" style="margin-top:1.2rem;">
+      <div class="card-head"><div class="card-title"><div class="dot" style="background:var(--lime)"></div>Metrics Chart</div></div>
+      <div class="card-body"><canvas id="metricsCanvas" height="200"></canvas></div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════ EMBEDDING LAB ═══════════ -->
+<section class="sec" id="embed-lab">
+<div class="sec-inner">
+  <div class="sec-tag rv">Chapter 03 — Embedding Visualizer</div>
+  <h2 class="sec-h rv rv1">🔮 Semantic Embedding Space</h2>
+  <p class="sec-sub rv rv2">Each chunk becomes a point in high-dimensional space. We project to 2D here. Change the chunk size and watch the semantic clusters re-form with live physics animation.</p>
+
+  <div class="emb-section" style="margin-top:1.5rem;">
+    <!-- MAIN CANVAS PANEL -->
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+      <div class="card rv rv1">
+        <div class="card-head">
+          <div class="card-title"><div class="dot" style="background:var(--violet)"></div>2D Semantic Projection</div>
+          <div style="display:flex;align-items:center;gap:.6rem;">
+            <span style="font-size:.62rem;font-family:var(--mono);color:var(--text3);">COLOR:</span>
+            <button class="meth-btn on" style="padding:.25rem .6rem;font-size:.62rem;" id="cm-chunk" onclick="setColorMode('chunk')">Chunk</button>
+            <button class="meth-btn" style="padding:.25rem .6rem;font-size:.62rem;" id="cm-topic" onclick="setColorMode('topic')">Topic</button>
+            <button class="meth-btn" style="padding:.25rem .6rem;font-size:.62rem;" id="cm-size" onclick="setColorMode('size')">Size</button>
+          </div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="embCanvas" height="440"></canvas>
+          <div class="canvas-ov">
+            <div class="cov-badge" id="embLbl">t-SNE projection · hover dots to inspect</div>
+            <div class="vbtns">
+              <button class="vbtn on" id="ev-tsne" onclick="setEmbView('tsne')">t-SNE</button>
+              <button class="vbtn" id="ev-pca" onclick="setEmbView('pca')">PCA</button>
+              <button class="vbtn" id="ev-umap" onclick="setEmbView('umap')">UMAP</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- EMB CONTROLS -->
+      <div class="card rv rv2">
+        <div class="card-head"><div class="card-title"><div class="dot" style="background:var(--cyan)"></div>Adjust Chunks → Watch Clusters Re-form</div></div>
+        <div class="card-body">
+          <div class="ctrl-row">
+            <div class="ctrl"><div class="ctrl-lbl">Chunk Size <span id="e-cs-v">300</span></div><input type="range" min="80" max="500" value="300" id="e-cs" oninput="updEmb()"></div>
+            <div class="ctrl"><div class="ctrl-lbl">Overlap <span id="e-ov-v">60</span></div><input type="range" min="0" max="120" value="60" id="e-ov" oninput="updEmb()"></div>
+            <div class="ctrl"><div class="ctrl-lbl">Physics Gravity <span id="e-gv-v">0.5</span></div><input type="range" min="1" max="10" value="5" id="e-gv" oninput="updEmb()"></div>
+          </div>
+          <div style="display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;">
+            <button onclick="reshuffleEmb()" class="btn btn-ghost" style="padding:.45rem 1.1rem;font-size:.72rem;">⟳ RESHUFFLE</button>
+            <button onclick="toggleEmbPhysics()" id="physBtn" class="btn btn-ghost" style="padding:.45rem 1.1rem;font-size:.72rem;border-color:rgba(167,139,250,.3);color:var(--violet);">⏸ PAUSE PHYSICS</button>
+            <span style="font-family:var(--mono);font-size:.65rem;color:var(--text3);">Dots with similar content cluster together. Larger dot = larger chunk.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="emb-sidebar">
+      <div class="card">
+        <div class="card-head"><div class="card-title"><div class="dot" style="background:var(--green)"></div>Chunk Legend</div></div>
+        <div class="card-body" style="padding:.7rem .9rem;"><div class="legend" id="emb-legend"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title"><div class="dot" style="background:var(--amber)"></div>Topic Clusters</div></div>
+        <div class="card-body" style="padding:.7rem .9rem;"><div class="cluster-list" id="cluster-list"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title"><div class="dot" style="background:var(--rose)"></div>Similarity Matrix</div>
+          <span style="font-size:.58rem;font-family:var(--mono);color:var(--text3);">hover=score</span>
+        </div>
+        <div class="card-body" style="padding:.7rem .9rem;">
+          <div class="sim-matrix" id="sim-matrix"></div>
+          <div style="display:flex;justify-content:space-between;margin-top:.4rem;font-size:.58rem;font-family:var(--mono);color:var(--text3);">
+            <span>0.0</span>
+            <div style="flex:1;height:5px;margin:0 .4rem;border-radius:3px;background:linear-gradient(90deg,var(--bg2),var(--violet),var(--cyan));align-self:center;"></div>
+            <span>1.0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ADVANCED CONCEPTS -->
+<section class="sec" id="advanced" style="background:var(--bg1);">
+<div class="sec-inner">
+  <div class="sec-tag rv">Chapter 04 — Advanced Topics</div>
+  <h2 class="sec-h rv rv1">Beyond Basic RAG</h2>
+  <p class="sec-sub rv rv2">Production RAG systems use these techniques to reach 95%+ accuracy on real-world queries.</p>
+  <div class="concepts-grid">
+    <div class="concept-card con1 rv rv1"><span class="ico">📐</span><h3>Cosine Similarity</h3><p>The math powering semantic search. Measures angle between two embedding vectors. Score=1.0 means identical meaning. Score=0.0 means completely unrelated. "Warranty" and "guarantee" cluster at ~0.9.</p><span class="ctag">MATH FOUNDATION</span></div>
+    <div class="concept-card con2 rv rv2"><span class="ico">🏗️</span><h3>Chunking Strategies</h3><p>Fixed-size, sliding window, recursive, semantic, and sentence-level chunking — each with distinct trade-offs. Recursive splitting (paragraph → sentence → word) wins on most structured documents.</p><span class="ctag">ARCHITECTURE</span></div>
+    <div class="concept-card con3 rv rv3"><span class="ico">🎯</span><h3>Hybrid Search</h3><p>Combine dense (semantic) retrieval with sparse (BM25/TF-IDF keyword) retrieval. Dense finds meaning. Sparse finds exact names/codes. Hybrid search + reciprocal rank fusion = state-of-the-art precision.</p><span class="ctag">ADVANCED</span></div>
+    <div class="concept-card con4 rv rv1"><span class="ico">🔄</span><h3>Re-ranking</h3><p>Retrieve top-20 chunks, then use a cross-encoder model to re-rank and select top-3. Cross-encoders score query-chunk pairs jointly — 2–3× better precision than bi-encoders at 5× compute cost.</p><span class="ctag">ADVANCED</span></div>
+    <div class="concept-card con5 rv rv2"><span class="ico">🌐</span><h3>Metadata Filtering</h3><p>Pre-filter by date, department, document type, or author before semantic search. For Vikash Innovative Tech: "Find answers from warranty docs created after 2024" combines structured + unstructured search.</p><span class="ctag">PRODUCTION</span></div>
+    <div class="concept-card con6 rv rv3"><span class="ico">📊</span><h3>RAG Evaluation (RAGAS)</h3><p>Measure: faithfulness (zero hallucination), answer relevancy, context precision, context recall. Never deploy without evals. RAGAS automates this against ground-truth Q&A pairs you define.</p><span class="ctag">QUALITY</span></div>
+    <div class="concept-card con7 rv rv1"><span class="ico">🧠</span><h3>Query Expansion</h3><p>Generate multiple paraphrases of the user question before retrieval. "Warranty claim process" → also search "how to file warranty", "warranty repair steps". Dramatically improves recall.</p><span class="ctag">ADVANCED</span></div>
+    <div class="concept-card con8 rv rv2"><span class="ico">🗃️</span><h3>Parent-Child Chunking</h3><p>Store small child chunks for precise retrieval, but send parent (larger) chunks to the LLM for full context. Best of both worlds — surgical retrieval precision with broad generative context.</p><span class="ctag">PRODUCTION</span></div>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PLAYGROUND -->
+<section class="sec playground-bg" id="playground">
+<div class="sec-inner">
+  <div class="sec-tag rv" style="justify-content:center;">Chapter 05 — Hands-On</div>
+  <h2 class="sec-h rv rv1" style="text-align:center;">🎮 RAG Playground</h2>
+  <p class="sec-sub rv rv2" style="text-align:center;max-width:540px;margin:0 auto;">Powered by Vikash Innovative Tech company policy data. Ask any question and watch the full pipeline run — retrieve, contextualize, answer.</p>
+  <div class="pg-grid rv rv3">
+    <div class="card">
+      <div class="card-head"><div class="card-title"><div class="dot" style="background:var(--cyan)"></div>Vikash Innovative Tech Knowledge Base</div></div>
+      <div class="card-body">
+        <div style="font-size:.65rem;font-family:var(--mono);color:var(--text3);margin-bottom:.6rem;letter-spacing:.09em;">SAMPLE QUERIES</div>
+        <button class="sq-btn" onclick="setSQ(this)">What does the 1-year warranty cover?</button>
+        <button class="sq-btn" onclick="setSQ(this)">How do I return a defective laptop?</button>
+        <button class="sq-btn" onclick="setSQ(this)">What are the customer support hours?</button>
+        <button class="sq-btn" onclick="setSQ(this)">Can I get a refund if I don't like the color?</button>
+        <button class="sq-btn" onclick="setSQ(this)">What is the shipping delivery time?</button>
+        <button class="sq-btn" onclick="setSQ(this)">Can I upgrade my laptop RAM?</button>
+        <div style="font-size:.65rem;font-family:var(--mono);color:var(--text3);margin:1rem 0 .6rem;letter-spacing:.09em;">YOUR QUESTION</div>
+        <textarea class="pg-input" id="pgQ">What does the 1-year warranty cover?</textarea>
+        <button class="pg-run" id="pgBtn" onclick="runPG()">⚡ RUN FULL RAG PIPELINE</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title"><div class="dot" style="background:var(--green)"></div>Pipeline Output</div></div>
+      <div class="card-body">
+        <div style="font-size:.65rem;font-family:var(--mono);color:var(--text3);margin-bottom:.4rem;letter-spacing:.09em;">STEP 1 — RETRIEVED CONTEXT</div>
+        <div class="output" id="pgCtx" style="margin-bottom:1rem;border-color:rgba(0,210,255,.15);"></div>
+        <div style="font-size:.65rem;font-family:var(--mono);color:var(--text3);margin-bottom:.4rem;letter-spacing:.09em;">STEP 2 — GENERATED ANSWER</div>
+        <div class="output" id="pgAns" style="border-color:rgba(0,255,157,.2);min-height:120px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">Interactive<span>RAG</span></div>
+  <p style="font-size:.9rem;color:var(--text2);margin-bottom:.5rem;">Complete RAG Mastery — From Basic to Production</p>
+  <p>© 2024 <strong style="color:var(--cyan);">Vikash Kumar</strong> · AI Generalist</p>
+  <div style="display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;font-family:var(--mono);font-size:.8rem;">
+
+    <a href="https://www.linkedin.com/in/vikash-kumar-a071a0205/" 
+       target="_blank" 
+       style="color:var(--cyan);text-decoration:none;border:1px solid var(--border2);padding:.5rem 1rem;border-radius:6px;transition:all .3s;">
+       🔗 LinkedIn
+    </a>
+
+    <a href="mailto:wiryvikash15@gmail.com" 
+       style="color:var(--green);text-decoration:none;border:1px solid var(--border2);padding:.5rem 1rem;border-radius:6px;transition:all .3s;">
+       ✉️ wiryvikash15@gmail.com
+    </a>
+
+  </div>
+  <p style="margin-top:.3rem;"><strong style="color:var(--green);">Vikash Innovative Tech</strong> — All company data used for educational demonstration</p>
+  <p style="margin-top:1rem;font-size:.68rem;">Built with expertise in LLMs · RAG Systems · Vector Databases · Generative AI</p>
+</footer>
+
+<script>
+// ═══════════════════════ CURSOR ═══════════════════════
+const C1=document.getElementById('c1'),C2=document.getElementById('c2');
+let mx=window.innerWidth/2,my=window.innerHeight/2,rx=mx,ry=my;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;C1.style.left=mx+'px';C1.style.top=my+'px';});
+(function loop(){rx+=(mx-rx)*.13;ry+=(my-ry)*.13;C2.style.left=rx+'px';C2.style.top=ry+'px';requestAnimationFrame(loop);})();
+
+// ═══════════════════════ PROGRESS ═════════════════════
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  document.getElementById('prog').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';
+});
+
+// ═══════════════════════ BG CANVAS ════════════════════
+(function(){
+  const cv=document.getElementById('bgc'),ctx=cv.getContext('2d');
+  cv.width=window.innerWidth;cv.height=window.innerHeight;
+  window.addEventListener('resize',()=>{cv.width=window.innerWidth;cv.height=window.innerHeight;});
+  const pts=Array.from({length:55},()=>({x:Math.random()*cv.width,y:Math.random()*cv.height,
+    vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,r:Math.random()*1.4+.3,a:Math.random()*.45+.08}));
+  function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    pts.forEach(p=>{
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(0,210,255,${p.a})`;ctx.fill();
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>cv.width)p.vx*=-1;if(p.y<0||p.y>cv.height)p.vy*=-1;
+    });
+    for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+      const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<115){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);
+        ctx.strokeStyle=`rgba(0,210,255,${.055*(1-d/115)})`;ctx.lineWidth=.5;ctx.stroke();}
+    }
+    requestAnimationFrame(draw);
+  }draw();
+})();
+
+// ═══════════════════════ REVEAL ════════════════════════
+new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.1})
+  .observe.bind(new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.09}));
+document.querySelectorAll('.rv').forEach(el=>new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.08}).observe(el));
+
+// ═══════════════════════ COPY CODE ═════════════════════
+function cp(btn){
+  const pre=btn.closest('.code-panel').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(()=>{btn.textContent='COPIED!';setTimeout(()=>btn.textContent='COPY',1500);});
+}
+
+// ═══════════════════════ STEPS ═════════════════════════
+function showStep(n){
+  document.querySelectorAll('.step-pane').forEach((p,i)=>p.classList.toggle('on',i===n));
+  document.querySelectorAll('.stab').forEach((t,i)=>t.classList.toggle('on',i===n));
+  if(n===5)setTimeout(doRetrieve,300);
+  if(n===6)setTimeout(()=>restartChat(),300);
+}
+function jumpStep(n){showStep(n);document.getElementById('pipeline').scrollIntoView({behavior:'smooth'});}
+
+// ═══════════════════════ DATA ══════════════════════════
+const FULL_TEXT=`Vikash Innovative Tech — Company Policies & FAQs
+
+WARRANTY POLICY
+All laptops come with a 1-year limited hardware warranty from the date of purchase. Warranty covers manufacturing defects, hardware malfunctions, and faulty components. Warranty does not cover accidental damage, liquid spills, unauthorized repairs, or cosmetic issues. Extended warranty and accidental damage protection plans are available at an additional cost.
+
+RETURN & REPLACEMENT POLICY
+Customers can request a return or replacement within 7 days of delivery if the product is dead on arrival, has a major defect, or is delivered in a damaged condition. For minor issues, repairs will be provided under warranty instead of a full replacement.
+
+REFUND POLICY
+Refunds are processed only if the product is returned in original packaging and condition, the return request is raised within 7 days of delivery, and the product is defective, damaged during shipping, or delivered incorrectly. Refunds are credited to the original payment method within 7-10 business days after inspection. Refunds are not applicable for preference-based returns such as color choice or performance dissatisfaction.
+
+REPAIR & SERVICE POLICY
+All repairs are handled by authorized service centers. Customers must present the original invoice and warranty card. Out-of-warranty repairs will be charged as per standard rates.
+
+SHIPPING & DELIVERY POLICY
+Standard delivery time is 3-7 business days within serviceable regions. Free shipping is available on orders above Rs 50000. Tracking details are shared via email or SMS once the order is dispatched.
+
+CUSTOMER SUPPORT POLICY
+Support is available through a toll-free helpline from 9 AM to 9 PM IST, a 24/7 email ticket system, and live chat on the official website. On-site support is available for select premium models.
+
+FAQ — PRODUCT & WARRANTY
+What does the standard warranty include? The warranty covers manufacturing defects and hardware failures but does not include accidental damage or software issues caused by third-party applications. How do I register my laptop? Register on the Vikash Innovative Tech website using the product serial number and purchase invoice within 30 days. Can I upgrade RAM or storage? Yes, most models allow upgrades but must be done at an authorized service center.
+
+FAQ — ORDERS & DELIVERY
+How can I track my order? Once shipped you will receive a tracking ID via email or SMS from Vikash Innovative Tech logistics. Where can I buy accessories? Original chargers, batteries, and docking stations are available on the official website and authorized resellers.
+
+FAQ — REFUNDS & RETURNS
+Can I return my laptop if I do not like it? No. Returns accepted only for manufacturing defects, delivery damage, or incorrect product. Personal preferences are not valid reasons. How long for a refund? 7-10 business days after inspection by Vikash Innovative Tech service team.`;
+
+const PAL=['#00d2ff','#00ff9d','#fbbf24','#fb7185','#a78bfa','#f97316','#2dd4bf','#a3e635','#e879f9','#60a5fa','#4ade80','#facc15','#f87171','#818cf8','#c084fc'];
+const TOPICS=[
+  {name:'Warranty',kw:['warranty','defect','hardware','manufacturing','cover'],color:'#00d2ff',id:0},
+  {name:'Returns',kw:['return','replacement','dead on arrival','damaged','7 days'],color:'#00ff9d',id:1},
+  {name:'Refunds',kw:['refund','payment','credit','inspection','packaging'],color:'#fbbf24',id:2},
+  {name:'Repairs',kw:['repair','service center','invoice','authorized'],color:'#f97316',id:3},
+  {name:'Shipping',kw:['shipping','delivery','tracking','dispatch'],color:'#a78bfa',id:4},
+  {name:'Support',kw:['support','helpline','ticket','live chat'],color:'#fb7185',id:5},
+  {name:'FAQ',kw:['faq','register','upgrade','track','accessories'],color:'#2dd4bf',id:6},
+];
+function getTopic(t){const l=t.toLowerCase();let bs=0,bt=0;TOPICS.forEach(tp=>{const s=tp.kw.filter(k=>l.includes(k)).length;if(s>bs){bs=s;bt=tp.id;}});return bt;}
+
+// ═══════════════════════ CHUNK FUNCS ══════════════════
+function chunkFixed(t,s){const c=[];for(let i=0;i<t.length;i+=s){const x=t.slice(i,i+s).trim();if(x)c.push({text:x,start:i,end:Math.min(i+s,t.length)});}return c;}
+function chunkSliding(t,s,o){const c=[];let i=0;while(i<t.length){const e=Math.min(i+s,t.length);const x=t.slice(i,e).trim();if(x)c.push({text:x,start:i,end:e,overlap:i>0?o:0});if(e===t.length)break;i+=s-o;if(i<0)i=0;}return c;}
+function chunkRecursive(t,s,seps=['\n\n','\n','. ','! ','? ',' ']){if(t.length<=s)return[{text:t.trim(),start:0,end:t.length}];let sep=seps[0]||' ';for(const sp of seps){if(t.indexOf(sp)!==-1){sep=sp;break;}}const parts=t.split(sep);const chunks=[];let cur='',pos=0,st=0;for(const p of parts){const cand=cur+(cur?sep:'')+p;if(cand.length<=s){cur=cand;}else{if(cur.trim())chunks.push({text:cur.trim(),start:st,end:st+cur.length});st=pos;cur=p;}pos+=p.length+sep.length;}if(cur.trim())chunks.push({text:cur.trim(),start:st,end:t.length});return chunks.filter(c=>c.text.length>=10);}
+
+// ═══════════════════════ LAB STATE ════════════════════
+let labMethod='fixed',labParams={cs:300,ov:60},labChunks=[],labActive=-1,labAnim=true;
+
+const MEXPS={
+  fixed:`<strong>Fixed Size:</strong> Splits text into equal-length segments of exactly <em>chunkSize</em> characters. Simple and predictable — great for uniform documents. Downside: may cut a sentence mid-thought, breaking semantic coherence.`,
+  sliding:`<strong>Sliding Window:</strong> Like fixed-size, but consecutive chunks share an <em>overlap</em> region. This ensures context at boundaries is never lost. More chunks = higher storage, but better retrieval coverage for dense text.`,
+  recursive:`<strong>Recursive Splitter:</strong> Tries to split at natural boundaries: <strong>paragraphs → newlines → sentences → words</strong> in priority order. Produces semantically coherent chunks of variable size. The gold standard for production RAG pipelines.`
+};
+
+function setMeth(m){
+  labMethod=m;
+  document.querySelectorAll('.meth-btn').forEach((b,i)=>b.classList.toggle('on',['fixed','sliding','recursive'][i]===m));
+  buildLabControls();labRenderAll();
+}
+
+function buildLabControls(){
+  document.getElementById('mexp').innerHTML=MEXPS[labMethod];
+  let html=`<div class="ctrl"><div class="ctrl-lbl">Chunk Size <span id="lcs-v">${labParams.cs}</span> chars</div><input type="range" min="60" max="600" value="${labParams.cs}" oninput="setLP('cs',+this.value)"></div>`;
+  if(labMethod==='sliding')html+=`<div class="ctrl"><div class="ctrl-lbl">Overlap <span id="lov-v">${labParams.ov}</span> chars</div><input type="range" min="0" max="150" value="${labParams.ov}" oninput="setLP('ov',+this.value)"></div><div class="ctrl"><div class="ctrl-lbl">Coverage <span id="lcov-v">${Math.round(labParams.ov/labParams.cs*100)}%</span></div><div style="height:7px;border-radius:3px;background:linear-gradient(90deg,var(--cyan) ${Math.round(labParams.ov/labParams.cs*100)}%,var(--surface3) ${Math.round(labParams.ov/labParams.cs*100)}%);transition:background .3s;" id="cov-bar"></div></div>`;
+  document.getElementById('ctrl-row').innerHTML=html;
+}
+
+function setLP(k,v){
+  labParams[k]=v;
+  const lv=document.getElementById('lcs-v');if(lv)lv.textContent=labParams.cs;
+  const ov=document.getElementById('lov-v');if(ov)ov.textContent=labParams.ov;
+  const cv=document.getElementById('lcov-v');if(cv)cv.textContent=Math.round(labParams.ov/labParams.cs*100)+'%';
+  const cb=document.getElementById('cov-bar');if(cb)cb.style.background=`linear-gradient(90deg,var(--cyan) ${Math.round(labParams.ov/labParams.cs*100)}%,var(--surface3) ${Math.round(labParams.ov/labParams.cs*100)}%)`;
+  labRenderAll();
+}
+
+function getLabChunks(){
+  if(labMethod==='fixed')return chunkFixed(FULL_TEXT,labParams.cs);
+  if(labMethod==='sliding')return chunkSliding(FULL_TEXT,labParams.cs,labParams.ov);
+  return chunkRecursive(FULL_TEXT,labParams.cs);
+}
+
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function labRenderAll(){
+  labChunks=getLabChunks();
+  renderTViz();renderStats();renderChunkList();renderDistChart();renderSweep();
+  document.getElementById('ck-badge').textContent=labChunks.length+' chunks';
+  document.getElementById('ck-info').textContent=labChunks.length+' items';
+  updEmb(true);updateCmp();
+}
+
+function renderTViz(){
+  const el=document.getElementById('tviz');
+  if(!labChunks.length){el.textContent=FULL_TEXT;return;}
+  const cov=new Array(FULL_TEXT.length).fill(-1);
+  [...labChunks].sort((a,b)=>a.start-b.start).forEach((c,i)=>{for(let j=c.start;j<Math.min(c.end,FULL_TEXT.length);j++){if(cov[j]===-1)cov[j]=i;}});
+  let html='',i=0;
+  while(i<FULL_TEXT.length){
+    const idx=cov[i];
+    if(idx===-1){let j=i;while(j<FULL_TEXT.length&&cov[j]===-1)j++;html+=esc(FULL_TEXT.slice(i,j));i=j;}
+    else{let j=i;while(j<FULL_TEXT.length&&cov[j]===idx)j++;const col=PAL[idx%PAL.length];html+=`<span class="ck" style="background:${col}20;border-bottom:2px solid ${col};" data-idx="${idx}" onclick="selectChunk(${idx})">${esc(FULL_TEXT.slice(i,j))}</span>`;i=j;}
+  }
+  el.innerHTML=html;
+}
+
+function renderStats(){
+  if(!labChunks.length){document.getElementById('stats-bar').innerHTML='';return;}
+  const s=labChunks.map(c=>c.text.length);
+  const avg=Math.round(s.reduce((a,b)=>a+b,0)/s.length);
+  const cov=Math.round(labChunks.reduce((a,c)=>a+c.text.length,0)/FULL_TEXT.length*100);
+  document.getElementById('stats-bar').innerHTML=`
+    <div class="sbox"><div class="snum">${labChunks.length}</div><div class="slbl">CHUNKS</div></div>
+    <div class="sbox"><div class="snum">${avg}</div><div class="slbl">AVG SIZE</div></div>
+    <div class="sbox"><div class="snum">${Math.min(...s)}</div><div class="slbl">MIN</div></div>
+    <div class="sbox"><div class="snum">${Math.max(...s)}</div><div class="slbl">MAX</div></div>
+    <div class="sbox"><div class="snum">${cov}%</div><div class="slbl">COVERAGE</div></div>`;
+}
+
+function renderChunkList(){
+  const el=document.getElementById('chunk-list');el.innerHTML='';
+  labChunks.forEach((c,i)=>{
+    const col=PAL[i%PAL.length],tp=TOPICS[getTopic(c.text)];
+    const d=document.createElement('div');d.className='citem'+(i===labActive?' hl':'');d.id='ci'+i;d.onclick=()=>selectChunk(i);
+    d.innerHTML=`<div class="cidx" style="background:${col}20;color:${col};border:1px solid ${col}40;">${i+1}</div><div><div class="ctxt">${esc(c.text.slice(0,85))}${c.text.length>85?'…':''}</div><div class="cmeta">${c.text.length} chars · <span style="color:${tp.color}">${tp.name}</span>${(c.overlap||0)>0?`<span class="ovlp-badge">↺ ${c.overlap}ch</span>`:''}</div></div>`;
+    el.appendChild(d);
+  });
+}
+
+function renderDistChart(){
+  const el=document.getElementById('dist-chart');el.innerHTML='';
+  if(!labChunks.length)return;
+  const s=labChunks.map(c=>c.text.length),mx=Math.max(...s);
+  s.forEach((v,i)=>{const b=document.createElement('div');b.className='dbar';b.style.flex='1';b.style.height=Math.max(8,Math.round(v/mx*100))+'%';b.style.background=i===labActive?'#ffffff':PAL[i%PAL.length]+'90';b.title=`Chunk ${i+1}: ${v} chars`;b.onclick=()=>selectChunk(i);el.appendChild(b);});
+}
+
+function selectChunk(i){
+  labActive=i;const c=labChunks[i];if(!c)return;
+  const col=PAL[i%PAL.length],tp=TOPICS[getTopic(c.text)];
+  const acv=document.getElementById('active-chunk-view');
+  acv.innerHTML=`<div style="background:var(--bg1);border:1px solid ${col};border-radius:8px;padding:.8rem;font-family:var(--mono);font-size:.73rem;line-height:1.7;color:var(--text);"><div style="font-size:.58rem;color:${col};margin-bottom:.4rem;letter-spacing:.1em;">CHUNK #${i+1} · ${c.text.length} chars · <span style="color:${tp.color}">${tp.name}</span></div>${esc(c.text)}</div>`;
+  document.querySelectorAll('.citem').forEach((el,j)=>el.classList.toggle('hl',j===i));
+  document.querySelectorAll('.dbar').forEach((b,j)=>{b.style.background=j===i?'#ffffff':PAL[j%PAL.length]+'90';});
+  document.querySelectorAll('.ck').forEach(el=>{const idx=+el.dataset.idx;el.style.filter=idx===i?'brightness(2)':'';el.style.outline=idx===i?`2px solid ${PAL[i%PAL.length]}`:'';});
+  const li=document.getElementById('ci'+i);if(li)li.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+
+function toggleAnimTgl(){labAnim=!labAnim;document.getElementById('anim-tgl').classList.toggle('on',labAnim);}
+
+// ═══════════════════════ SWEEP ═════════════════════════
+let swData=[],swIdx=0,swPlaying=false,swTimer=null;
+function buildSwData(){
+  swData=[];
+  for(let s=60;s<=600;s+=18){
+    let c;
+    if(labMethod==='fixed')c=chunkFixed(FULL_TEXT,s);
+    else if(labMethod==='sliding')c=chunkSliding(FULL_TEXT,s,labParams.ov);
+    else c=chunkRecursive(FULL_TEXT,s);
+    swData.push({size:s,count:c.length});
+  }
+}
+function renderSweep(){
+  buildSwData();
+  const el=document.getElementById('sweep-chart');if(!el)return;el.innerHTML='';
+  const mx=Math.max(...swData.map(d=>d.count));
+  swData.forEach((d,i)=>{
+    const isAct=Math.abs(d.size-labParams.cs)<10;
+    const b=document.createElement('div');b.className='swbar';
+    b.style.height=Math.max(5,Math.round(d.count/mx*100))+'%';
+    b.style.background=isAct?'var(--cyan)':'rgba(0,210,255,.22)';
+    b.title=`Size: ${d.size} → ${d.count} chunks`;
+    b.onclick=()=>{labParams.cs=d.size;const ci=document.querySelector('#ctrl-row input[type=range]');if(ci)ci.value=d.size;const lv=document.getElementById('lcs-v');if(lv)lv.textContent=d.size;labRenderAll();};
+    el.appendChild(b);
+  });
+}
+function toggleSweep(){swPlaying=!swPlaying;document.getElementById('pbtn').textContent=swPlaying?'⏸':'▶';if(swPlaying)runSweep();else clearTimeout(swTimer);}
+function runSweep(){
+  if(!swPlaying)return;
+  swIdx=(swIdx+1)%swData.length;
+  const d=swData[swIdx];labParams.cs=d.size;
+  const ci=document.querySelector('#ctrl-row input[type=range]');if(ci)ci.value=d.size;
+  const lv=document.getElementById('lcs-v');if(lv)lv.textContent=d.size;
+  labRenderAll();
+  document.getElementById('pfill').style.width=(swIdx/swData.length*100)+'%';
+  document.getElementById('plbl').textContent='size: '+d.size;
+  swTimer=setTimeout(runSweep,110);
+}
+function scrubSweep(e){
+  const r=e.currentTarget.getBoundingClientRect();
+  const pct=(e.clientX-r.left)/r.width;
+  swIdx=Math.max(0,Math.min(swData.length-1,Math.floor(pct*swData.length)));
+  labParams.cs=swData[swIdx].size;labRenderAll();
+}
+
+// ═══════════════════════ COMPARE ══════════════════════
+function updateCmp(){
+  const cs=+document.getElementById('cmp-cs').value;
+  const ov=+document.getElementById('cmp-ov').value;
+  document.getElementById('cmp-cs-v').textContent=cs;
+  document.getElementById('cmp-ov-v').textContent=ov;
+  const meths=[
+    {id:'fixed',label:'📏 Fixed Size',color:'var(--cyan)',chunks:chunkFixed(FULL_TEXT,cs)},
+    {id:'sliding',label:'🪟 Sliding Window',color:'var(--green)',chunks:chunkSliding(FULL_TEXT,cs,ov)},
+    {id:'recursive',label:'🌿 Recursive',color:'var(--violet)',chunks:chunkRecursive(FULL_TEXT,cs)},
+  ];
+  const g=document.getElementById('cmp-grid');g.innerHTML='';
+  meths.forEach(m=>{
+    const s=m.chunks.map(c=>c.text.length);
+    const avg=s.length?Math.round(s.reduce((a,b)=>a+b,0)/s.length):0;
+    const std=Math.round(Math.sqrt(s.map(v=>(v-avg)**2).reduce((a,b)=>a+b,0)/Math.max(s.length,1)));
+    const bh=s.slice(0,28).map((v,i)=>`<div style="flex:1;min-width:3px;height:${Math.max(4,Math.round(v/Math.max(...s)*55))}px;background:${PAL[i%PAL.length]}88;border-radius:1px 1px 0 0;"></div>`).join('');
+    const card=document.createElement('div');card.className='cmp-card';
+    card.innerHTML=`<div style="font-size:.7rem;font-weight:700;color:${m.color};margin-bottom:.8rem;">${m.label}</div>
+    <div class="stats-bar" style="margin-bottom:.8rem;">
+      <div class="sbox" style="flex:0 0 60px;"><div class="snum" style="font-size:1.3rem;">${m.chunks.length}</div><div class="slbl">CHUNKS</div></div>
+      <div class="sbox" style="flex:0 0 60px;"><div class="snum" style="font-size:1.3rem;">${avg}</div><div class="slbl">AVG</div></div>
+      <div class="sbox" style="flex:0 0 60px;"><div class="snum" style="font-size:1.3rem;">±${std}</div><div class="slbl">STD</div></div>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:1px;height:60px;">${bh}</div>
+    <div class="tviz" style="max-height:120px;margin-top:.7rem;font-size:.68rem;">${buildCmpText(m.chunks)}</div>`;
+    g.appendChild(card);
+  });
+  drawMetrics(meths);
+}
+function buildCmpText(chunks){
+  if(!chunks.length)return esc(FULL_TEXT.slice(0,250));
+  return chunks.slice(0,12).map((c,i)=>`<span style="background:${PAL[i%PAL.length]}1a;border-bottom:1.5px solid ${PAL[i%PAL.length]};">${esc(c.text.slice(0,60))}${c.text.length>60?'…':''}</span>`).join('');
+}
+function drawMetrics(methods){
+  const cv=document.getElementById('metricsCanvas');if(!cv)return;
+  cv.width=cv.offsetWidth;const W=cv.width,H=200;
+  const ctx=cv.getContext('2d');ctx.clearRect(0,0,W,H);
+  const labels=['Count','Avg Size/10','Std Dev/5'];
+  const vals=methods.map(m=>{
+    const s=m.chunks.map(c=>c.text.length);
+    const avg=s.length?s.reduce((a,b)=>a+b,0)/s.length:0;
+    const std=Math.sqrt(s.map(v=>(v-avg)**2).reduce((a,b)=>a+b,0)/Math.max(s.length,1));
+    return[m.chunks.length,avg/10,std/5];
+  });
+  const mxV=labels.map((_,i)=>Math.max(...vals.map(v=>v[i]),1));
+  const cols=['#00d2ff','#00ff9d','#a78bfa'];
+  const gW=Math.floor((W-80)/(labels.length*(methods.length+.5)));
+  labels.forEach((lbl,li)=>{
+    const gx=60+li*(gW*methods.length+20);
+    methods.forEach((m,mi)=>{
+      const norm=vals[mi][li]/mxV[li];
+      const x=gx+mi*gW,bH=Math.max(3,norm*(H-50)),y=H-28-bH;
+      ctx.fillStyle=cols[mi]+'bb';ctx.shadowColor=cols[mi];ctx.shadowBlur=4;
+      ctx.fillRect(x,y,gW-3,bH);ctx.shadowBlur=0;
+    });
+    ctx.fillStyle='rgba(125,168,200,.5)';ctx.font='10px Oxanium';ctx.textAlign='center';
+    ctx.fillText(lbl,gx+gW*methods.length/2,H-8);
+  });
+  methods.forEach((m,i)=>{ctx.fillStyle=cols[i];ctx.fillRect(W-120+i*38,8,10,10);ctx.fillStyle='rgba(224,242,254,.55)';ctx.font='10px Oxanium';ctx.textAlign='left';ctx.fillText(m.id,W-108+i*38,18);});
+}
+
+// ═══════════════════════ EMBEDDING ════════════════════
+const TOPIC_C=[[.18,.28],[.35,.72],[.66,.78],[.8,.28],[.72,.12],[.14,.72],[.5,.46]];
+const VIEW_O={tsne:[[0,0],[.05,-.04],[-.04,.05],[.03,.03]],pca:[[.09,.04],[.04,.09],[-.07,.04],[.02,-.05]],umap:[[-.05,.07],[.08,-.03],[.04,.06],[-.04,-.08]]};
+let embDots=[],embRAF=null,embPhysics=true,embView='tsne',embColor='chunk',embHL=-1;
+let embCanvas,embCtx;
+
+function initEmb(){
+  embCanvas=document.getElementById('embCanvas');if(!embCanvas)return;
+  embCtx=embCanvas.getContext('2d');
+  resizeEmb();window.addEventListener('resize',resizeEmb);
+  embCanvas.addEventListener('mousemove',onEmbMM);
+  embCanvas.addEventListener('mouseleave',()=>{embHL=-1;document.getElementById('tooltip').style.display='none';});
+  embCanvas.addEventListener('click',onEmbCl);
+  updEmb(true);
+}
+
+function resizeEmb(){
+  if(!embCanvas)return;embCanvas.width=embCanvas.offsetWidth;embCanvas.height=440;
+}
+
+function updEmb(force=false){
+  const cs=+document.getElementById('e-cs').value||300;
+  const ov=+document.getElementById('e-ov').value||60;
+  const gv=+document.getElementById('e-gv').value||5;
+  document.getElementById('e-cs-v').textContent=cs;
+  document.getElementById('e-ov-v').textContent=ov;
+  document.getElementById('e-gv-v').textContent=(gv/10).toFixed(1);
+  let chunks;
+  if(labMethod==='fixed')chunks=chunkFixed(FULL_TEXT,cs);
+  else if(labMethod==='sliding')chunks=chunkSliding(FULL_TEXT,cs,ov);
+  else chunks=chunkRecursive(FULL_TEXT,cs);
+  const W=embCanvas?embCanvas.width:700,H=embCanvas?embCanvas.height:440,PAD=48;
+  const voff=VIEW_O[embView]||VIEW_O.tsne;
+  const newDots=chunks.map((c,i)=>{
+    const tp=getTopic(c.text),cen=TOPIC_C[tp];
+    const ang=Math.random()*Math.PI*2,spr=.07+Math.random()*.09;
+    const vo=voff[i%voff.length]||[0,0];
+    const tx=(cen[0]+Math.cos(ang)*spr+vo[0])*(W-PAD*2)+PAD;
+    const ty=(cen[1]+Math.sin(ang)*spr+vo[1])*(H-PAD*2)+PAD;
+    const ex=embDots[i];
+    return{x:ex?ex.x:tx+(Math.random()-.5)*70,y:ex?ex.y:ty+(Math.random()-.5)*70,tx,ty,vx:ex?ex.vx:0,vy:ex?ex.vy:0,r:5.5+c.text.length/130,tp,text:c.text.slice(0,120)+'…',size:c.text.length,color:PAL[i%PAL.length],tcol:TOPICS[tp].color,grav:gv/10,idx:i};
+  });
+  embDots=newDots;
+  renderEmbLegend();renderSimMatrix();renderClusterList();
+  if(!embRAF||force)startEmbLoop();
+}
+
+function startEmbLoop(){
+  if(embRAF)cancelAnimationFrame(embRAF);
+  function loop(){
+    drawEmb();
+    if(embPhysics){
+      embDots.forEach(d=>{
+        const dx=d.tx-d.x,dy=d.ty-d.y;
+        d.vx+=dx*d.grav*.042;d.vy+=dy*d.grav*.042;
+        d.vx*=.87;d.vy*=.87;d.x+=d.vx;d.y+=d.vy;
+        embDots.forEach(o=>{if(o===d)return;const ex=d.x-o.x,ey=d.y-o.y,ds=Math.sqrt(ex*ex+ey*ey),mn=d.r+o.r+7;if(ds<mn&&ds>0){const f=(mn-ds)/ds*.28;d.vx+=ex*f;d.vy+=ey*f;}});
+      });
+    }
+    embRAF=requestAnimationFrame(loop);
+  }loop();
+}
+
+function drawEmb(){
+  if(!embCanvas||!embCtx)return;
+  const ctx=embCtx,W=embCanvas.width,H=embCanvas.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle='rgba(0,210,255,.035)';ctx.lineWidth=1;
+  for(let x=0;x<W;x+=38){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=38){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  // connections
+  embDots.forEach((d,i)=>embDots.slice(i+1).forEach(o=>{
+    if(d.tp!==o.tp)return;const dx=d.x-o.x,dy=d.y-o.y,ds=Math.sqrt(dx*dx+dy*dy);
+    if(ds<110){ctx.beginPath();ctx.moveTo(d.x,d.y);ctx.lineTo(o.x,o.y);ctx.strokeStyle=d.tcol+Math.round(.12*(1-ds/110)*255).toString(16).padStart(2,'0');ctx.lineWidth=.7;ctx.stroke();}
+  }));
+  // cluster zones
+  if(embView==='tsne'){
+    const cm={};embDots.forEach(d=>{if(!cm[d.tp])cm[d.tp]=[];cm[d.tp].push(d);});
+    Object.entries(cm).forEach(([tid,ds])=>{
+      if(ds.length<2)return;
+      const cx=ds.reduce((a,d)=>a+d.x,0)/ds.length,cy=ds.reduce((a,d)=>a+d.y,0)/ds.length;
+      const rd=ds.reduce((a,d)=>Math.max(a,Math.sqrt((d.x-cx)**2+(d.y-cy)**2)),0)+18;
+      const g=ctx.createRadialGradient(cx,cy,0,cx,cy,rd);
+      g.addColorStop(0,TOPICS[tid].color+'15');g.addColorStop(1,TOPICS[tid].color+'00');
+      ctx.beginPath();ctx.arc(cx,cy,rd,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+    });
+  }
+  // dots
+  embDots.forEach((d,i)=>{
+    const ish=i===embHL;
+    const col=embColor==='topic'?d.tcol:embColor==='size'?sizeCol(d.size):d.color;
+    if(ish){const g=ctx.createRadialGradient(d.x,d.y,0,d.x,d.y,d.r+14);g.addColorStop(0,col+'55');g.addColorStop(1,col+'00');ctx.beginPath();ctx.arc(d.x,d.y,d.r+14,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();}
+    ctx.shadowColor=col;ctx.shadowBlur=ish?18:5;
+    ctx.beginPath();ctx.arc(d.x,d.y,ish?d.r+3:d.r,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();ctx.shadowBlur=0;
+    ctx.beginPath();ctx.arc(d.x,d.y,ish?d.r+3:d.r,0,Math.PI*2);ctx.strokeStyle=ish?'#fff':col+'77';ctx.lineWidth=ish?1.5:.5;ctx.stroke();
+    if(ish){ctx.font='bold 10px Oxanium';ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText('#'+(i+1),d.x,d.y+4);}
+  });
+  ctx.font='9px Fira Code';ctx.fillStyle='rgba(0,210,255,.35)';ctx.textAlign='left';ctx.fillText('← semantic dimension 1 →',6,H-6);
+  ctx.save();ctx.translate(12,H/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillText('← semantic dimension 2 →',0,0);ctx.restore();
+}
+function sizeCol(s){const n=Math.min(1,(s-40)/560);return`rgb(${Math.round(0+n*251)},${Math.round(210+n*(113-210))},${Math.round(255+n*(133-255))})` ;}
+
+function onEmbMM(e){
+  if(!embCanvas)return;
+  const r=embCanvas.getBoundingClientRect();
+  const sx=(e.clientX-r.left)*(embCanvas.width/r.width),sy=(e.clientY-r.top)*(embCanvas.height/r.height);
+  let found=-1,mn=28;
+  embDots.forEach((d,i)=>{const ds=Math.sqrt((d.x-sx)**2+(d.y-sy)**2);if(ds<d.r+12&&ds<mn){mn=ds;found=i;}});
+  embHL=found;
+  const tp=document.getElementById('tooltip');
+  if(found>=0){
+    const d=embDots[found],t=TOPICS[d.tp];
+    tp.style.display='block';tp.style.left=(e.clientX+12)+'px';tp.style.top=(e.clientY-10)+'px';
+    tp.innerHTML=`<span style="color:${d.color};font-weight:700;">Chunk #${found+1}</span> · <span style="color:${t.color}">${t.name}</span><br>${d.size} chars<hr style="border:none;border-top:1px solid rgba(0,210,255,.12);margin:.35rem 0">${esc(d.text)}`;
+  }else tp.style.display='none';
+}
+function onEmbCl(){if(embHL>=0)selectChunk(embHL);}
+function reshuffleEmb(){embDots.forEach(d=>{d.x+=(Math.random()-.5)*110;d.y+=(Math.random()-.5)*110;d.vx=(Math.random()-.5)*5;d.vy=(Math.random()-.5)*5;});}
+function toggleEmbPhysics(){embPhysics=!embPhysics;document.getElementById('physBtn').textContent=embPhysics?'⏸ PAUSE PHYSICS':'▶ RESUME PHYSICS';}
+function setColorMode(m){embColor=m;['chunk','topic','size'].forEach(id=>{document.getElementById('cm-'+id).classList.toggle('on',id===m);});}
+function setEmbView(v){embView=v;['tsne','pca','umap'].forEach(id=>{document.getElementById('ev-'+id).classList.toggle('on',id===v);});document.getElementById('embLbl').textContent=v.toUpperCase()+' projection · hover dots to inspect';updEmb();}
+
+function renderEmbLegend(){
+  const el=document.getElementById('emb-legend');if(!el)return;
+  el.innerHTML=embDots.map((d,i)=>`<div class="leg-item" onmouseover="embHL=${i}" onmouseout="embHL=-1"><div class="leg-dot" style="background:${d.color}"></div><div style="flex:1;font-size:.66rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Chunk ${i+1} · ${d.size}ch</div><div style="font-size:.6rem;color:${d.tcol}">${TOPICS[d.tp].name}</div></div>`).join('');
+}
+function renderClusterList(){
+  const el=document.getElementById('cluster-list');if(!el)return;
+  const cnt={};embDots.forEach(d=>cnt[d.tp]=(cnt[d.tp]||0)+1);
+  el.innerHTML=TOPICS.map((t,i)=>cnt[i]?`<div class="cl-chip"><div class="cl-sw" style="background:${t.color}"></div><div style="flex:1;font-weight:600;">${t.name}</div><div style="font-family:var(--mono);font-size:.6rem;color:var(--text3);">${cnt[i]} chunks</div></div>`:''
+  ).join('');
+}
+function renderSimMatrix(){
+  const el=document.getElementById('sim-matrix');if(!el||!embDots.length)return;
+  const N=Math.min(embDots.length,10);el.style.gridTemplateColumns=`repeat(${N},1fr)`;el.innerHTML='';
+  for(let i=0;i<N;i++)for(let j=0;j<N;j++){
+    const sim=i===j?1:embDots[i].tp===embDots[j].tp?0.65+Math.random()*.3:0.1+Math.random()*.3;
+    const cell=document.createElement('div');cell.className='sim-cell';
+    cell.style.background=`hsl(${240-sim*200},75%,${20+sim*35}%)`;
+    cell.title=`C${i+1}↔C${j+1}: ${sim.toFixed(2)}`;
+    cell.onmouseenter=e=>{const tp=document.getElementById('tooltip');tp.style.display='block';tp.style.left=(e.clientX+12)+'px';tp.style.top=(e.clientY-10)+'px';tp.innerHTML=`<span style="color:${PAL[i%PAL.length]}">Chunk ${i+1}</span> ↔ <span style="color:${PAL[j%PAL.length]}">Chunk ${j+1}</span><br>Similarity: <span style="color:var(--cyan);font-weight:700;">${sim.toFixed(3)}</span>`;};
+    cell.onmousemove=e=>{const tp=document.getElementById('tooltip');tp.style.left=(e.clientX+12)+'px';tp.style.top=(e.clientY-10)+'px';};
+    cell.onmouseleave=()=>document.getElementById('tooltip').style.display='none';
+    el.appendChild(cell);
+  }
+}
+
+// ═══════════════════════ RETRIEVAL DEMO ═══════════════
+const KB=[
+  {text:"All laptops from Vikash Innovative Tech come with a 1-year limited hardware warranty from the date of purchase. Coverage includes manufacturing defects, hardware malfunctions, and faulty components.",score:.94,src:"vik_policy.pdf, p.1"},
+  {text:"Warranty does NOT cover: accidental damage, liquid spills, unauthorized repairs, cosmetic issues. Extended warranty and accidental damage protection plans available at additional cost.",score:.87,src:"vik_policy.pdf, p.1"},
+  {text:"All repairs handled by authorized service centers. Customers must present original invoice and warranty card. Out-of-warranty repairs charged at standard rates.",score:.75,src:"vik_policy.pdf, p.2"},
+  {text:"Customers can request a return or replacement within 7 days of delivery if the product is dead on arrival, has a major defect, or delivered in damaged condition.",score:.82,src:"vik_policy.pdf, p.1"},
+  {text:"Refunds processed only if product returned in original packaging within 7 days. Refunds credited to original payment method within 7-10 business days after inspection.",score:.78,src:"vik_policy.pdf, p.2"},
+  {text:"Standard delivery time: 3-7 business days. Free shipping on orders above Rs 50000. Tracking shared via email/SMS once dispatched from Vikash Innovative Tech warehouse.",score:.71,src:"vik_policy.pdf, p.2"},
+  {text:"Support: toll-free helpline 9AM-9PM IST, 24/7 email ticket system, live chat on official website. On-site support for select premium models.",score:.68,src:"vik_policy.pdf, p.2"},
+  {text:"RAM and storage upgrades allowed on most Vikash Innovative Tech models but must be performed at authorized service centers to maintain warranty validity.",score:.73,src:"vik_policy.pdf, p.3"},
+];
+const QM={warranty:[0,1,2],return:[3,4,1],refund:[4,3,1],ship:[5,6,3],support:[6,5,2],repair:[2,0,7],defect:[3,0,4],deliver:[5,3,6],replace:[3,0,4],color:[4,3,1],upgrade:[7,2,0],register:[0,7,2]};
+
+function doRetrieve(){
+  const q=(document.getElementById('qinp')?.value||'').toLowerCase();
+  const el=document.getElementById('ret-results');if(!el)return;
+  el.innerHTML='';
+  let idxs=[0,1,2];
+  for(const[kw,is]of Object.entries(QM)){if(q.includes(kw)){idxs=is;break;}}
+  idxs.forEach((idx,rank)=>{
+    const item=KB[idx];const div=document.createElement('div');div.className='result';
+    div.innerHTML=`<span class="r-rank">#${rank+1}</span><div><div class="r-txt">${item.text}</div><div class="r-score">⚡ ${(item.score-rank*.05).toFixed(2)} · 📄 ${item.src}</div></div>`;
+    el.appendChild(div);setTimeout(()=>div.classList.add('show'),rank*180+80);
+  });
+}
+
+// ═══════════════════════ CHAT DEMO ════════════════════
+const CHAT_RESP=`Based on the Vikash Innovative Tech warranty policy [1], your 1-year limited hardware warranty covers:
+
+• Manufacturing defects
+• Hardware malfunctions
+• Faulty components
+
+What is NOT covered [2]: accidental damage, liquid spills, unauthorized repairs, and cosmetic issues.
+
+To claim warranty [3]: visit an authorized Vikash Innovative Tech service center with your original invoice and warranty card. For minor issues, repair (not replacement) is provided under warranty.`;
+
+let chatStarted=false;
+function restartChat(){
+  const msg=document.getElementById('aiMsg');const txt=document.getElementById('aiTxt');
+  if(!msg||!txt)return;msg.classList.remove('show');txt.innerHTML='';chatStarted=false;
+  setTimeout(()=>{msg.classList.add('show');typeChat(txt,CHAT_RESP,15);},700);
+}
+function typeChat(el,text,spd){
+  let i=0;const cur=document.createElement('span');cur.className='tcursor';el.appendChild(cur);
+  const iv=setInterval(()=>{if(i<text.length){el.insertBefore(document.createTextNode(text[i]),cur);i++;document.getElementById('chatBody').scrollTop=9999;}else{clearInterval(iv);cur.remove();}},spd);
+}
+setTimeout(restartChat,600);
+
+// ═══════════════════════ PLAYGROUND ═══════════════════
+function setSQ(btn){document.getElementById('pgQ').value=btn.textContent;}
+const PGM={
+  'warranty cover':{ctx:'[Chunk #1 · sim: 0.94]\nAll laptops from Vikash Innovative Tech include 1-year hardware warranty. Covers manufacturing defects, hardware malfunctions, faulty components.\n\n[Chunk #2 · sim: 0.87]\nNOT covered: accidental damage, liquid spills, unauthorized repairs, cosmetic issues.',
+    ans:'Your Vikash Innovative Tech laptop warranty covers manufacturing defects, hardware malfunctions, and faulty components [1]. It does NOT cover accidental damage, liquid spills, unauthorized repairs, or cosmetic issues [2].\n\nExtended warranty plans are available at additional cost.'},
+  'return defective':{ctx:'[Chunk #1 · sim: 0.91]\nReturn/replacement within 7 days of delivery if: dead on arrival, major defect, or damaged during delivery.\n\n[Chunk #2 · sim: 0.78]\nMinor issues receive repair under warranty instead of full replacement.',
+    ans:'You can request a return or replacement from Vikash Innovative Tech within 7 days of delivery if the laptop is dead on arrival or has a major defect [1]. For minor issues, repair under warranty is provided instead of a full replacement [2].'},
+  'support':{ctx:'[Chunk #1 · sim: 0.93]\nSupport available: toll-free 9AM-9PM IST, 24/7 email ticket system, live chat on official website. On-site support for premium models.',
+    ans:'Vikash Innovative Tech offers multiple support channels [1]:\n• Toll-free helpline (9AM–9PM IST)\n• 24/7 email ticket system\n• Live chat on official website\n• On-site support for select premium models'},
+  'color':{ctx:'[Chunk #1 · sim: 0.89]\nRefunds NOT applicable for preference-based returns: color choice, performance dissatisfaction, or personal preference.',
+    ans:'No, Vikash Innovative Tech does not accept returns based on personal preference including color choice [1]. Returns are only accepted for manufacturing defects, delivery damage, or incorrect product delivery.'},
+  'shipping':{ctx:'[Chunk #1 · sim: 0.92]\nStandard delivery: 3-7 business days. Free shipping on orders above Rs 50000. Tracking via email/SMS upon dispatch.',
+    ans:'Vikash Innovative Tech\'s standard delivery time is 3–7 business days [1]. Free shipping applies to orders above Rs 50,000. You\'ll receive tracking details via email and SMS once dispatched.'},
+  'upgrade':{ctx:'[Chunk #1 · sim: 0.88]\nRAM and storage upgrades allowed on most models but must be done at authorized Vikash Innovative Tech service centers to maintain warranty.',
+    ans:'Yes, most Vikash Innovative Tech laptops support RAM and storage upgrades [1]. However, upgrades must be performed at an authorized service center — doing it yourself will void your warranty.'},
+};
+function runPG(){
+  const q=document.getElementById('pgQ').value.toLowerCase();
+  const btn=document.getElementById('pgBtn');
+  const ctx=document.getElementById('pgCtx'),ans=document.getElementById('pgAns');
+  btn.disabled=true;ctx.innerHTML='';ans.innerHTML='';
+  let match=null;
+  for(const[kw,data]of Object.entries(PGM)){if(kw.split(' ').some(w=>q.includes(w))){match=data;break;}}
+  if(!match)match=PGM['warranty cover'];
+  setTimeout(()=>{typeOut(ctx,match.ctx,8,()=>{setTimeout(()=>typeOut(ans,match.ans,12,()=>btn.disabled=false),250);});},500);
+}
+function typeOut(el,text,spd,cb){
+  let i=0;const cur=document.createElement('span');cur.className='tcursor';el.appendChild(cur);
+  const iv=setInterval(()=>{if(i<text.length){el.insertBefore(document.createTextNode(text[i]),cur);i++;}else{clearInterval(iv);cur.remove();if(cb)cb();}},spd);
+}
+
+// ═══════════════════════ NAV ACTIVE ═══════════════════
+const sections=['why','arch','pipeline','chunk-lab','embed-lab','advanced','playground'];
+window.addEventListener('scroll',()=>{
+  const scrollY=window.pageYOffset;
+  sections.forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    const top=el.offsetTop-120,bot=top+el.offsetHeight;
+    if(scrollY>=top&&scrollY<bot){
+      document.querySelectorAll('.nav-link').forEach(l=>l.classList.toggle('active',l.getAttribute('href')==='#'+id));
+    }
+  });
+});
+
+// ═══════════════════════ INIT ═════════════════════════
+buildLabControls();
+labRenderAll();
+
+// Lazy-init embedding when visible
+const eo=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting&&!embCanvas){initEmb();}});},{threshold:.1});
+const ep=document.getElementById('embed-lab');if(ep)eo.observe(ep);
+</script>
+</body>
+</html>
