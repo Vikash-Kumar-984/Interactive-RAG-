@@ -1,5 +1,3 @@
-# Interactive-Live-RAG
-
 # 🚀 RAG Mastery — Interactive Learning Platform
 ### Retrieval-Augmented Generation (Basic → Advanced)
 
