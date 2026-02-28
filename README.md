@@ -1,4 +1,4 @@
-# 🚀 Interactive RAG — Visual Learning Platform
+# 🚀 Interactive Live RAG — Visual Learning Platform
 ### Retrieval-Augmented Generation (Basic → Advanced)
 
 > A fully interactive and dynamic platform designed to teach Retrieval-Augmented Generation in the simplest, most visual, and most intuitive way possible.
