@@ -145,7 +145,7 @@ Email: wiryvikash15@gmail.com
 
 ---
 
-[Live Demo](https://vikash-kumar-984.github.io/Interactive-RAG-/)
+Live Demo: [Live Demo](https://vikash-kumar-984.github.io/Interactive-RAG-/)
 
 ---
 
